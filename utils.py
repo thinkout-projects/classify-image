@@ -8,12 +8,13 @@ import numpy as np
 from scipy import stats
 import scipy
 import cv2
+import glob
 from keras.utils import np_utils
 
 
 # Projects.utils
 # Date: 2018/04/02
-# Filename: utils 
+# Filename: utils
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 __author__ = 'masuo'
@@ -101,9 +102,15 @@ def model_compile(model, loss, optimizer):
     return
 
 def model_load(model,model_folder,idx):
-    model_file = "weights" + "_" + str(idx) + "." + "hdf5"
-    model_fpath = os.path.join(model_folder, model_file)
+    model_files= glob.glob(os.path.join(model_folder, "weights_" + str(idx) + "_*"))
+    model_fpath = model_files[-1]
     model.load_weights(model_fpath)
+    return
+
+def model_delete(model,model_folder,idx):
+    model_files= glob.glob(os.path.join(model_folder, "weights_" + str(idx) + "_*"))
+    for model_fpath in model_files[:-1]:
+        os.remove(model_fpath)
     return
 
     # 訓練用データ数のカウント

@@ -41,12 +41,13 @@ class Models(object):
     # DenseNet201
     # ResNet50
 
-    def __init__(self, size, classes):
+    def __init__(self, size, classes,pic_mode):
         self.ch = 3
         self.size = size
         self.w = self.size[0]
         self.h = self.size[1]
         self.classes = classes
+        self.pic_mode = pic_mode
 
     def inception_resnet2(self):
         input_tensor = Input(shape = (self.h,self.w,self.ch))
@@ -56,7 +57,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=design_model.input, output=top_model(design_model.output))
         return model
@@ -69,7 +71,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=design_model.input, output=top_model(design_model.output))
         return model
@@ -82,7 +85,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=design_model.input, output=top_model(design_model.output))
         return model
@@ -95,7 +99,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=design_model.input, output=top_model(design_model.output))
         return model
@@ -108,7 +113,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=design_model.input, output=top_model(design_model.output))
         return model
@@ -121,7 +127,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=design_model.input, output=top_model(design_model.output))
         return model
@@ -134,7 +141,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=design_model.input, output=top_model(design_model.output))
         return model
@@ -147,7 +155,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=design_model.input, output=top_model(design_model.output))
         return model
@@ -162,7 +171,8 @@ class Models(object):
         top_model.add(Flatten(input_shape=vgg16_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
-        top_model.add(Dense(self.classes, activation='softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         # VGG16とFCを接続
         model = Model(input=vgg16_model.input, output=top_model(vgg16_model.output))
         return model
@@ -215,7 +225,8 @@ class Models(object):
         #model.add(BatchNormalization())
         model.add(Dropout(0.70))
         model.add(Dense(self.classes))
-        model.add(Activation('softmax'))
+        if(self.pic_mode != 2): top_model.add(Dense(self.classes, activation='softmax'))
+        else: top_model.add(Dense(self.classes, activation='relu'))
         return model
 
     # laptopでも使用できる3層ネットワーク
@@ -236,19 +247,21 @@ class Models(object):
         model.add(Activation('relu'))
         model.add(Dropout(0.5))
         model.add(Dense(self.classes))
-        model.add(Activation('softmax'))
+        if(self.pic_mode != 2): model.add(Activation('softmax'))
+        else: model.add(Activation('relu'))
         return model
 
     # Trainingのクラスをスーパークラスとして、サブクラスである学習クラスを作成。
 class Learning(Training):
 
-    def __init__(self, source_folder,dataset_folder, train_root,idx,train_num_mode_dic,size,classes,
+    def __init__(self, source_folder,dataset_folder, train_root,idx,pic_mode,train_num_mode_dic,size,classes,
                  rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range,BATCH_SIZE,
                  model_folder, model, X_val,y_val, epochs):
-        super().__init__(source_folder,dataset_folder, train_root,idx,train_num_mode_dic,size,classes,
+        super().__init__(source_folder,dataset_folder, train_root,idx,pic_mode,train_num_mode_dic,size,classes,
                  rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range,BATCH_SIZE)
         self.model_folder = model_folder
         self.model = model
+        self.pic_mode = pic_mode
         self.X_val = X_val
         self.y_val = y_val
         self.epochs = epochs
@@ -275,10 +288,10 @@ class Learning(Training):
     def learning_model(self):
         # modelフォルダを作成
         folder_create(self.model_folder)
-        model_file = "weights_" + str(self.idx) + "." + "hdf5"
+        model_file = "weights_" + str(self.idx) + "_epoch{epoch:02}.hdf5"
         # val_lossが最小になったときのみmodelを保存
         mc_cb = ModelCheckpoint(os.path.join(self.model_folder, model_file),
-                                    monitor='val_acc', verbose=1, save_best_only=True,mode='max')
+                                    monitor='val_loss', verbose=1, save_best_only=True,mode='min')
         # 学習が停滞したとき、学習率を0.2倍に
         rl_cb = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=5, verbose=1, mode='auto',
                                   epsilon=0.0001, cooldown=0, min_lr=0)

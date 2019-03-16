@@ -1,14 +1,14 @@
-#! env python
+﻿#! env python
 # -*- coding: utf-8 -*-
 
 import os
 import sys
+from time import sleep
 # GPU使用量の調整
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
+from keras.backend import tensorflow_backend
 from keras.backend import clear_session
-# resize
-from resize import resizing
 # folder関連
 from utils import folder_create, folder_delete,folder_clean
 # 分割
@@ -23,7 +23,7 @@ from utils import model_compile
 from training_data import Training
 from learning import Learning, plot_hist
 # 評価
-from utils import model_load
+from utils import model_load, model_delete
 from auc_analysis import AnalysisBinary,AnalysisMulti
 # まとめ
 from auc_analysis import summary_analysis, cross_making,miss_summarize
@@ -67,18 +67,21 @@ def main():
     # GPUに過負荷がかかると実行できなくなる。∴余力を持たしておく必要がある。
     # 50％のみを使用することとする
     config = tf.ConfigProto()
-    config.gpu_options.per_process_gpu_memory_fraction = 0.5
+    #config.gpu_options.per_process_gpu_memory_fraction = 0.8
+    config.gpu_options.allow_growth = True
     set_session(tf.Session(config=config))
+
     # k-Foldの分割数を指定
-    resizing()
     k = 5
 
     # 0なら2値分類
     # 1なら多クラス分類
+    # 2なら回帰(imgフォルダに適当な名前("_"禁止)で1フォルダだけ作成し、その中にすべての画像を入れる)
+    #           画像のファイル名は"{ターゲット}_{元々のファイル名}"に修正しておく
     pic_mode = 1
 
     # batch_sizeを指定
-    batch_size = 8
+    batch_size = 32
     # data拡張の際の変数を指定
     rotation_range = 2
     width_shift_range = 0.01
@@ -92,8 +95,8 @@ def main():
     dataset_folder = "dataset"
     train_root = "train"
     test_root = "test"
-    output_folder_list = ["VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201","InceptionResNetV2","InceptionV3","ResNet50","Xception"]
-    # output_folder_list = ["ResNet50","Xception"]
+    #output_folder_list = ["VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201","InceptionResNetV2","InceptionV3","ResNet50","Xception"]
+    output_folder_list = ["VGG16"]
     # desktop.iniの削除
     folder_clean(img_root)
     # 分類数を調べる。
@@ -101,28 +104,27 @@ def main():
     # ここで、データ拡張の方法を指定。
     folder_list = os.listdir(img_root)
     train_num_mode_dic = {}
+    # 1881 1907 2552 1493 232
+
     for i,folder in enumerate(folder_list):
-        if i == 0:
-            train_num_mode_dic[folder_list[i]] = [3,1]
-        elif i == 1:
-            train_num_mode_dic[folder_list[i]] = [3,1]
-        elif i == 2:
-            train_num_mode_dic[folder_list[i]] = [9,1]
+        train_num_mode_dic[folder] = [3,1]
+
+
     # sizeの指定
-    size = [256,192]
+    size = [224,224]
     # 分割
     split = Split(k, img_root, dataset_folder)
-    split.k_fold_split()
+    split.k_fold_split_unique()
     # 分割ごとに
     for idx in range(k):
             # 評価用データについて
-        validation = Validation(size, img_root, test_root, dataset_folder, classes, idx)
+        validation = Validation(size, img_root, test_root, dataset_folder, classes, pic_mode, idx)
         validation.pic_df_test()
         # 画像のデータ、タグ、パスの出力
         X_val,y_val,W_val = validation.pic_gen_data()
         print("validation making finished")
 
-        training = Training(img_root, dataset_folder, train_root, idx, train_num_mode_dic, size, classes,
+        training = Training(img_root, dataset_folder, train_root, idx, pic_mode, train_num_mode_dic, size, classes,
                             rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range,
                             batch_size)
             # 訓練画像の出力
@@ -143,7 +145,8 @@ def main():
             miss_file = os.path.join(output_folder,"miss_summary.csv")
             # "VGG19","DenseNet121","DenseNet169","DenseNet201","InceptionResNetV2"
             # "InceptionV3","ResNet50","Xception"
-            model_ch = Models(size,classes)
+            model_ch = Models(size,classes,pic_mode)
+            """
             if out_i == 0:
                 model = model_ch.vgg16()
             elif out_i == 1:
@@ -162,20 +165,27 @@ def main():
                 model = model_ch.resnet50()
             elif out_i == 8:
                 model = model_ch.xception()
+            """
+            if out_i == 0:
+                model = model_ch.vgg16()
+
             # optimizerはSGD
-            optimizer = SGD(lr= 0.0001,decay=1e-6, momentum=0.9, nesterov=True)# Adam(lr = 0.0005)
+            if(pic_mode != 2): optimizer = SGD(lr= 0.0001,decay=1e-6, momentum=0.9, nesterov=True)# Adam(lr = 0.0005)
+            else: optimizer = Adam(lr = 0.0001)
             # lossは画像解析のモードによる。
             if pic_mode == 0:
                 loss = "binary_crossentropy"
             elif pic_mode == 1:
                 loss = "categorical_crossentropy"
+            elif pic_mode == 2:
+                loss = "mean_squared_error"
                 # modelをcompileする。
             model_compile(model,loss, optimizer)
             epochs = 20
             print("model compile finish")
-            learning = Learning(img_root,dataset_folder, train_root,idx,train_num_mode_dic,size,classes,
-                        rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range,batch_size,
-                        model_folder, model, X_val,y_val, epochs)
+            learning = Learning(img_root,dataset_folder, train_root,idx,pic_mode,train_num_mode_dic,size,classes,
+                     rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range,batch_size,
+                     model_folder, model, X_val,y_val, epochs)
                     # 訓練実行
             history = learning.learning_model()
             plot_hist(history, history_folder, idx)
@@ -187,12 +197,19 @@ def main():
             elif pic_mode == 1:
                 analysis = AnalysisMulti(train_root, test_root, miss_folder, model_folder,result_file,
                     model,X_val,y_val,W_val,idx)
+            elif pic_mode == 2:
+                analysis = AnalysisMulti(train_root, test_root, miss_folder, model_folder,result_file,
+                    model,X_val,y_val,W_val,idx)
             analysis.result_csv()
             print("Analysis finished")
+            model_delete(model, model_folder, idx)
             clear_session()
+            tensorflow_backend.clear_session()
             # 訓練用フォルダおよびテスト用フォルダを削除する。
         folder_delete(train_root)
         folder_delete(test_root)
+        print("start wait")
+        sleep(2*60)
         print("Next split")
     print("start Summary Analysis")
     for output_folder in output_folder_list:

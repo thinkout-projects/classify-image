@@ -22,11 +22,12 @@ __date__ = "2018/05/21"
 
 # 評価用データの作成および読み込みのクラス
 class Validation(object):
-    def __init__(self,size, source_folder, test_root,dataset_folder,classes, idx):
+    def __init__(self,size, source_folder, test_root,dataset_folder,classes,pic_mode, idx):
         self.source_folder = source_folder
         self.test_root = test_root
         self.dataset_folder = dataset_folder
         self.idx = idx
+        self.pic_mode = pic_mode
         self.classes = classes
         self.size = size
         self.h = self.size[0]
@@ -58,15 +59,18 @@ class Validation(object):
     def pic_gen_data(self):
         fpath_list, tag_array = fpath_tag_making(self.test_root, self.classes)
         X_val = []
+        y_val = []
         for fpath in fpath_list:
             X = read_img(fpath, self.h, self.w)
             X_val.append(X)
+            if(self.pic_mode == 2): y_val.append(int(fpath.split("\\")[-1].split("_")[0]))
         # 全てを再度array化する
         X_val = np.array(X_val)
+        if(self.pic_mode == 2): y_val = np.array(y_val)
             # class数がいくつか
         print("%d classes" % self.classes)
         # validation dataがいくつか。
         print("test_data = %d" % (len(X_val)))
         # validationのデータとlabel、ファイルパス
-        return (X_val, tag_array, fpath_list)
-
+        if(self.pic_mode != 2): return (X_val, tag_array, fpath_list)
+        else: return (X_val, y_val, fpath_list)

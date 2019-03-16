@@ -56,11 +56,12 @@ def threadsafe_generator(f):
 
 
 class Training(object):
-    def __init__(self, source_folder,dataset_folder, train_root,idx,train_num_mode_dic,size,classes,
+    def __init__(self, source_folder,dataset_folder, train_root,idx,pic_mode,train_num_mode_dic,size,classes,
                  rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range,BATCH_SIZE):
         self.source_folder = source_folder
         self.train_root = train_root
         self.idx = idx
+        self.pic_mode = pic_mode
         self.dataset_folder = dataset_folder
         self.train_num_mode_dic = train_num_mode_dic
         self.size = size
@@ -129,9 +130,12 @@ class Training(object):
             fpath = fpath_list[i +b]
             X = read_img(fpath, self.h, self.w)
             X_train.append(X)
+            # 回帰の場合はファイル名冒頭からターゲットを読み込む
+            if(self.pic_mode == 2): y_train.append(int(fpath.split("\\")[-1].split("_")[2]))
         X_train = np.array(X_train)
         X_train = Training.data_gen(self,X_train)
-        y_train = tag_array[i: i+ self.BATCH_SIZE]
+        if(self.pic_mode != 2): y_train = tag_array[i: i+ self.BATCH_SIZE]
+        else: y_train = np.array(y_train)
         return X_train, y_train
 
     @threadsafe_generator
