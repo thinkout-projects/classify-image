@@ -6,16 +6,18 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
-from utils import folder_create,split_array
+from utils import folder_create, split_array
 import random
 
 # Projects.k_fold_split
 # Date: 2018/04/02
-# Filename: k_fold_split 
+# Filename: k_fold_split
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 __author__ = 'masuo'
 __date__ = "2018/04/02"
+
+
 class Split:
     # コンストラクタ、分割数、元フォルダ、出力先のデータセットフォルダを
     def __init__(self, k, source_folder, dataset_folder):
@@ -43,7 +45,8 @@ class Split:
         X = np.array(X)
         y = np.array(y)
         # shuffleする、リストにスプリット順に、保存されていく。
-        skf = StratifiedKFold(n_splits=self.k, shuffle=True, random_state=self.random_seed)
+        skf = StratifiedKFold(n_splits=self.k, shuffle=True,
+                              random_state=self.random_seed)
         train_list = []
         test_list = []
         for (i, (train_index, test_index)) in enumerate(skf.split(X, y)):
@@ -72,11 +75,15 @@ class Split:
                 ds_train = pd.Series(train_name)
                 test_name = test_list[idx][col_idx]
                 ds_test = pd.Series(test_name)
-                df_train = pd.concat([df_train,pd.DataFrame(ds_train,columns = [folder_name])],axis=1)
-                df_test = pd.concat([df_test,pd.DataFrame(ds_test,columns = [folder_name])],axis=1)
+                df_train = pd.concat([df_train, pd.DataFrame(
+                    ds_train, columns=[folder_name])], axis=1)
+                df_test = pd.concat([df_test, pd.DataFrame(
+                    ds_test, columns=[folder_name])], axis=1)
 
-            df_train.to_csv(self.dataset_folder + "/" + "train" + "_" + str(idx) + ".csv", index=False, encoding="utf-8")
-            df_test.to_csv(self.dataset_folder + "/" + "test" + "_" + str(idx) + ".csv", index=False, encoding="utf-8")
+            df_train.to_csv(self.dataset_folder + "/" + "train" +
+                            "_" + str(idx) + ".csv", index=False, encoding="utf-8")
+            df_test.to_csv(self.dataset_folder + "/" + "test" +
+                           "_" + str(idx) + ".csv", index=False, encoding="utf-8")
         return
 
     # 画像用フォルダ
@@ -96,7 +103,6 @@ class Split:
             X.extend(file_list)
             y.extend(tag_list)
 
-        
         # ファイル名が "患者ID_画像ID" になっていると仮定
         # 患者IDのみ抽出
         X_unique = []
@@ -109,7 +115,8 @@ class Split:
         X_unique = np.array(X_unique)
         y_unique = np.array(y_unique)
         # shuffleする、リストにスプリット順に、保存されていく。
-        skf = StratifiedKFold(n_splits=self.k, shuffle=True, random_state=self.random_seed)
+        skf = StratifiedKFold(n_splits=self.k, shuffle=True,
+                              random_state=self.random_seed)
         train_list = []
         test_list = []
         # 患者IDのみでデータ分割
@@ -119,11 +126,13 @@ class Split:
             for index in train_index:
                 # 患者IDが同じデータを探し，リストに入れる(非効率なので要修正)
                 for (filename, tag) in zip(X, y):
-                    if(filename[:-6] == X_unique[index]): train_folder_list[tag].append(filename)
+                    if(filename[:-6] == X_unique[index]):
+                        train_folder_list[tag].append(filename)
             for index in test_index:
                 # 患者IDが同じデータを探し，リストに入れる(非効率なので要修正)
                 for (filename, tag) in zip(X, y):
-                    if(filename[:-6] == X_unique[index]): test_folder_list[tag].append(filename)
+                    if(filename[:-6] == X_unique[index]):
+                        test_folder_list[tag].append(filename)
             train_list.append(train_folder_list)
             test_list.append(test_folder_list)
         # スプリット順にcsvに出力
@@ -139,9 +148,13 @@ class Split:
                 ds_train = pd.Series(train_name)
                 test_name = test_list[idx][col_idx]
                 ds_test = pd.Series(test_name)
-                df_train = pd.concat([df_train,pd.DataFrame(ds_train,columns = [folder_name])],axis=1)
-                df_test = pd.concat([df_test,pd.DataFrame(ds_test,columns = [folder_name])],axis=1)
+                df_train = pd.concat([df_train, pd.DataFrame(
+                    ds_train, columns=[folder_name])], axis=1)
+                df_test = pd.concat([df_test, pd.DataFrame(
+                    ds_test, columns=[folder_name])], axis=1)
 
-            df_train.to_csv(self.dataset_folder + "/" + "train" + "_" + str(idx) + ".csv", index=False, encoding="utf-8")
-            df_test.to_csv(self.dataset_folder + "/" + "test" + "_" + str(idx) + ".csv", index=False, encoding="utf-8")
+            df_train.to_csv(self.dataset_folder + "/" + "train" +
+                            "_" + str(idx) + ".csv", index=False, encoding="utf-8")
+            df_test.to_csv(self.dataset_folder + "/" + "test" +
+                           "_" + str(idx) + ".csv", index=False, encoding="utf-8")
         return
