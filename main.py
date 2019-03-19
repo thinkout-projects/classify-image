@@ -1,6 +1,9 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# 機械学習テンプレートコード
+# Usage: python main.py
+
 import os
 import sys
 from time import sleep

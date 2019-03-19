@@ -1,28 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# 毎回全て書くのが面倒な雑多な処理集
+
 import os
 import shutil
 import pandas as pd
 import numpy as np
-from scipy import stats
+# from scipy import stats
 import scipy
 import cv2
 import glob
 from keras.utils import np_utils
-
-
-# Projects.utils
-# Date: 2018/04/02
-# Filename: utils
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-__author__ = 'masuo'
-__date__ = "2018/04/02"
-
-# separate(folder)は訓練用、評価用に分ける関数
-# movie_separate(folder,num)は当該ファイル（訓練用）、その他訓練用、当該ファイル（評価用）、その他評価用に分ける
-# folder_create(folder)
 
 
 def folder_create(folder):
@@ -37,8 +26,8 @@ def folder_delete(folder):
 
 
 def ID_reading(dataset_folder, idx):
-    df = pd.read_csv(os.path.join(dataset_folder, "dataset" +
-                                  "_" + str(idx) + "." + "csv"), encoding="utf-8")
+    df = pd.read_csv(os.path.join(dataset_folder, "dataset" + "_" + str(idx) + "." + "csv"),
+                     encoding="utf-8")
     # ファイル名一覧
     train_list = df["train"].dropna()
     test_list = df["test"].dropna()
@@ -53,6 +42,9 @@ def clopper_pearson(k, n, alpha):
 
 
 def folder_clean(img_root):
+    '''
+    `img_root`フォルダ中のdesktop.iniの削除
+    '''
     folder_list = os.listdir(img_root)
     for folder in folder_list:
         folderpath = os.path.join(img_root, folder)
@@ -81,12 +73,13 @@ def list_shuffle(a, b, seed):
     b2 = list(b1)
     return a2, b2
 
-# root/00_normal/画像を見に行く。
-# filepathのリストと
-# tagのカテゴリー化済みのarrayが出力される。
-
 
 def fpath_tag_making(root, classes):
+    '''
+    root/00_normal/画像を見に行く。
+    filepathのリストとtagのカテゴリー化済みのarrayが出力される。
+    '''
+
     # train
     seed = 1
     folder_list = os.listdir(root)
@@ -126,10 +119,12 @@ def model_delete(model, model_folder, idx):
         os.remove(model_fpath)
     return
 
-    # 訓練用データ数のカウント
-
 
 def num_count(root):
+    '''
+    訓練用データ数のカウント
+    '''
+
     dic = {}
     folder_list = os.listdir(root)
     for folder in folder_list:
