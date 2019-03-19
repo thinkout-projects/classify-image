@@ -11,11 +11,11 @@ import os
 
 def data_augment(newfolder, file, src0, num_list, mode):
     '''
-    newfolderは保存先のフォルダ
-    fileは元々のfile名（拡張子なし）→のちにjpgをたす
-    srcは元の画像（numpy array型式）
-    num_listはどの変換を適応するか
-    modeはflipのどれを含めるか（2018/4/1時点では左右flipのみ）
+    `newfolder`は保存先のフォルダ
+    `file`は元々のfile名（拡張子なし）→のちにjpgをたす
+    `src0`は元の画像（numpy array型式）
+    `num_list`はどの変換を適応するか
+    `mode`はflipのどれを含めるか（2018/4/1時点では左右flipのみ）
     '''
 
     data = Trans()
@@ -132,9 +132,9 @@ class Trans:
     # ⑦ ヒストグラム均一化
     def equalizeHistRGB_func(self, src):
         RGB = cv2.split(src)
-        Blue = RGB[0]
-        Green = RGB[1]
-        Red = RGB[2]
+        # Blue = RGB[0]
+        # Green = RGB[1]
+        # Red = RGB[2]
         for i in range(3):
             cv2.equalizeHist(RGB[i])
         img_hist = cv2.merge([RGB[0], RGB[1], RGB[2]])
@@ -144,7 +144,7 @@ class Trans:
     def addGaussianNoise_func(self, src):
         row, col, ch = src.shape
         mean = 0
-        var = 0.1
+        # var = 0.1
         sigma = 15
         gauss = np.random.normal(mean, sigma, (row, col, ch))
         gauss = gauss.reshape(row, col, ch)
