@@ -107,7 +107,9 @@ def main():
     # 1881 1907 2552 1493 232
 
     for i, folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [3, 1]
+        train_num_mode_dic[folder] = [1, 1]
+        if i == 3 or i == 4:
+            train_num_mode_dic[folder] = [9, 1]
 
     # sizeの指定
     size = [224, 224]
