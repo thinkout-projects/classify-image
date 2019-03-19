@@ -10,13 +10,13 @@ from keras.backend.tensorflow_backend import set_session
 from keras.backend import tensorflow_backend
 from keras.backend import clear_session
 # folder関連
-from utils import folder_create, folder_delete,folder_clean
+from utils import folder_create, folder_delete, folder_clean
 # 分割
 from k_fold_split import Split
 # 評価用データ
 from validation_data import Validation
 # モデルコンパイル
-from keras.optimizers import Adam,SGD
+from keras.optimizers import Adam, SGD
 from learning import Models
 from utils import model_compile
 # 学習用データ
@@ -24,9 +24,9 @@ from training_data import Training
 from learning import Learning, plot_hist
 # 評価
 from utils import model_load, model_delete
-from auc_analysis import AnalysisBinary,AnalysisMulti
+from auc_analysis import AnalysisBinary, AnalysisMulti
 # まとめ
-from auc_analysis import summary_analysis, cross_making,miss_summarize
+from auc_analysis import summary_analysis, cross_making, miss_summarize
 # Projects.main
 # Date: 2018/04/01
 # Filename: main
@@ -106,46 +106,48 @@ def main():
     train_num_mode_dic = {}
     # 1881 1907 2552 1493 232
 
-    for i,folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [3,1]
-
+    for i, folder in enumerate(folder_list):
+        train_num_mode_dic[folder] = [1, 1]
+        if i == 3 or i == 4:
+            train_num_mode_dic[folder] = [9, 1]
 
     # sizeの指定
-    size = [224,224]
+    size = [224, 224]
     # 分割
     split = Split(k, img_root, dataset_folder)
     split.k_fold_split_unique()
     # 分割ごとに
     for idx in range(k):
             # 評価用データについて
-        validation = Validation(size, img_root, test_root, dataset_folder, classes, pic_mode, idx)
+        validation = Validation(size, img_root, test_root,
+                                dataset_folder, classes, pic_mode, idx)
         validation.pic_df_test()
         # 画像のデータ、タグ、パスの出力
-        X_val,y_val,W_val = validation.pic_gen_data()
+        X_val, y_val, W_val = validation.pic_gen_data()
         print("validation making finished")
 
         training = Training(img_root, dataset_folder, train_root, idx, pic_mode, train_num_mode_dic, size, classes,
                             rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range,
                             batch_size)
-            # 訓練画像の出力
+        # 訓練画像の出力
         training.pic_df_training()
         print("Training making finished")
-            # model定義
-            # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
+        # model定義
+        # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
 
-        for out_i,output_folder in enumerate(output_folder_list):
+        for out_i, output_folder in enumerate(output_folder_list):
             folder_create(output_folder)
-            history_folder = os.path.join(output_folder,"history")
-            model_folder = os.path.join(output_folder,"model")
-            miss_folder = os.path.join(output_folder,"miss")
-            roc_folder = os.path.join(output_folder,"roc")
-            result_file = os.path.join(output_folder,"result.csv")
-            summary_file = os.path.join(output_folder,"summary.csv")
-            cross_file = os.path.join(output_folder,"cross.csv")
-            miss_file = os.path.join(output_folder,"miss_summary.csv")
+            history_folder = os.path.join(output_folder, "history")
+            model_folder = os.path.join(output_folder, "model")
+            miss_folder = os.path.join(output_folder, "miss")
+            roc_folder = os.path.join(output_folder, "roc")
+            result_file = os.path.join(output_folder, "result.csv")
+            summary_file = os.path.join(output_folder, "summary.csv")
+            cross_file = os.path.join(output_folder, "cross.csv")
+            miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG19","DenseNet121","DenseNet169","DenseNet201","InceptionResNetV2"
             # "InceptionV3","ResNet50","Xception"
-            model_ch = Models(size,classes,pic_mode)
+            model_ch = Models(size, classes, pic_mode)
             """
             if out_i == 0:
                 model = model_ch.vgg16()
@@ -170,8 +172,11 @@ def main():
                 model = model_ch.vgg16()
 
             # optimizerはSGD
-            if(pic_mode != 2): optimizer = SGD(lr= 0.0001,decay=1e-6, momentum=0.9, nesterov=True)# Adam(lr = 0.0005)
-            else: optimizer = Adam(lr = 0.0001)
+            if(pic_mode != 2):
+                optimizer = SGD(lr=0.0001, decay=1e-6, momentum=0.9,
+                                nesterov=True)  # Adam(lr = 0.0005)
+            else:
+                optimizer = Adam(lr=0.0001)
             # lossは画像解析のモードによる。
             if pic_mode == 0:
                 loss = "binary_crossentropy"
@@ -180,26 +185,26 @@ def main():
             elif pic_mode == 2:
                 loss = "mean_squared_error"
                 # modelをcompileする。
-            model_compile(model,loss, optimizer)
+            model_compile(model, loss, optimizer)
             epochs = 20
             print("model compile finish")
-            learning = Learning(img_root,dataset_folder, train_root,idx,pic_mode,train_num_mode_dic,size,classes,
-                     rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range,batch_size,
-                     model_folder, model, X_val,y_val, epochs)
-                    # 訓練実行
+            learning = Learning(img_root, dataset_folder, train_root, idx, pic_mode, train_num_mode_dic, size, classes,
+                                rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range, batch_size,
+                                model_folder, model, X_val, y_val, epochs)
+            # 訓練実行
             history = learning.learning_model()
             plot_hist(history, history_folder, idx)
             print("Learning finished")
             model_load(model, model_folder, idx)
             if pic_mode == 0:
-                analysis = AnalysisBinary(train_root, test_root, miss_folder, model_folder, roc_folder,result_file,
-                        model,X_val,y_val,W_val,idx)
+                analysis = AnalysisBinary(train_root, test_root, miss_folder, model_folder, roc_folder, result_file,
+                                          model, X_val, y_val, W_val, idx)
             elif pic_mode == 1:
-                analysis = AnalysisMulti(train_root, test_root, miss_folder, model_folder,result_file,
-                    model,X_val,y_val,W_val,idx)
+                analysis = AnalysisMulti(train_root, test_root, miss_folder, model_folder, result_file,
+                                         model, X_val, y_val, W_val, idx)
             elif pic_mode == 2:
-                analysis = AnalysisMulti(train_root, test_root, miss_folder, model_folder,result_file,
-                    model,X_val,y_val,W_val,idx)
+                analysis = AnalysisMulti(train_root, test_root, miss_folder, model_folder, result_file,
+                                         model, X_val, y_val, W_val, idx)
             analysis.result_csv()
             print("Analysis finished")
             model_delete(model, model_folder, idx)
