@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# 訓練用データ(= trainフォルダ)の準備
+
 import os
 import pandas as pd
 import numpy as np
@@ -12,8 +14,6 @@ from utils import folder_create, read_img
 # from utils import fpath_tag_making
 from keras.preprocessing.image import ImageDataGenerator
 # from keras.utils import np_utils
-
-# 訓練用データ(= trainフォルダ)の準備
 
 # k_fold_split(k,img_root,dataset_folder)
 # train_0.csvなどとなる。columnsはimg_rootにあるフォルダ名

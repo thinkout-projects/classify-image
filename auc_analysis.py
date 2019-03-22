@@ -1,22 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# 2値分類、他クラス分類に関する結果表示(csv出力もする)
+
 import os
-import sys
+# import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 from utils import folder_create, clopper_pearson, num_count
 from sklearn.metrics import roc_curve, auc
-
-# code.learning
-# Date: 2017/10/16
-# Filename: learning
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-__author__ = 'masuo'
-__date__ = "2017/10/16"
 
 
 class Analysis_Basic(object):
@@ -26,8 +20,11 @@ class Analysis_Basic(object):
         self.X_val = X_val
         self.y_val = y_val
 
-    # 正答率の表示
     def accuracy(self):
+        '''
+        正答率の表示
+        '''
+
         score = self.model.evaluate(self.X_val, self.y_val)
         loss_model = score[0]
         accuracy_model = score[1]
@@ -49,16 +46,20 @@ class Miss(object):
         self.test_folder = test_folder
         self.miss_folder = miss_folder
 
-    # missの数とmissした問題の番号が出力
     def miss_detail(self):
+        '''
+        missの数とmissした問題の番号が出力
+        '''
+
         miss = 0
-        miss_list = []
+        # miss_list = []
         pre_list = []
         true_list = []
         folder_list = os.listdir(self.test_folder)
         nb_classes = len(folder_list)
         score_list = [[] for x in range(nb_classes)]
         # preはfileごとの確率の羅列
+        # pre_listはすべての問題のAIによる回答
         for i, v in enumerate(self.y_pred):
             pre_ans = v.argmax()
             pre_list.append(pre_ans)
@@ -69,25 +70,31 @@ class Miss(object):
             if pre_ans != ans:
                 miss += 1
         return miss, pre_list, true_list, score_list
-    # pre_listはすべての問題のAIによる回答
 
-    # 全てのファイルをフォルダごとにcsvファイルに書き込む
     def miss_csv_making(self):
+        '''
+        全てのファイルをフォルダごとにcsvファイルに書き込む
+        '''
+
         miss, pre_list, true_list, score_list = Miss.miss_detail(self)
+
         # missフォルダ作成
         folder_create(self.miss_folder)
         folder_list = os.listdir(self.test_folder)
-        nb_classes = len(folder_list)
+        # nb_classes = len(folder_list)
+
         # クラス分の[]を用意する。
         file_name_list = []
         for num in range(len(pre_list)):
             # y_val[num]は当該ファイルの正答のベクトル、argmaxで正答番号がわかる
             # W_val[num]は当該ファイルのパス、\\で分割し-1にすることで一番最後のファイル名が分かる
             file_name_list.append(self.W_val[num].split("\\")[-1])
+
         df = pd.DataFrame()
         df["filename"] = file_name_list
         df["true"] = true_list
         df["predict"] = pre_list
+
         for i, score in enumerate(score_list):
             df[folder_list[i]] = score
 
@@ -97,8 +104,11 @@ class Miss(object):
         return miss
 
 
-# AUC関連のデータ
 class AUC(object):
+    '''
+    AUC関連のデータ
+    '''
+
     def __init__(self, idx, y_pred, y_val, model, roc_folder):
         self.idx = idx
         self.y_pred = y_pred
@@ -108,20 +118,28 @@ class AUC(object):
         self.auc_list = self.auc_curve
         self.dim_list = self.auc_csv
 
-    # AUCについての情報を算定する
     def auc_curve(self):
+        '''
+        AUCについての情報を算定する
+        '''
+
         # 異常の症例を01においていると仮定している。
         y_pred = self.y_pred[:, 1]
+
         # y_testはloadのところで定義済み
         y_val = self.y_val[:, 1]
         fpr, tpr, thresholds = roc_curve(y_val, y_pred)
+
         # これがAUCの値
         roc_auc = auc(fpr, tpr)
         self.auc_list = roc_auc, fpr, tpr, thresholds
         return
-    # auc_curaveにて算定された情報を基に作図。
 
     def auc_plot(self):
+        '''
+        auc_curaveにて算定された情報を基に作図
+        '''
+
         roc_auc, fpr, tpr, thresholds = self.auc_list
         plt.figure()
         plt.plot(fpr, tpr, linewidth=3,
@@ -139,20 +157,25 @@ class AUC(object):
         plt.savefig(roc_fpath)
         return
 
-    # csvファイルも作成（その際に距離も算定する）
     def auc_csv(self):
+        '''
+        csvファイルも作成（その際に距離も算定する）
+        '''
+
         roc_auc, fpr, tpr, thresholds = self.auc_list
         df_roc = pd.DataFrame(
             columns=["fpr", "tpr", "threshold", "dim1", "dim2"])
         df_roc["fpr"] = fpr
         df_roc["tpr"] = tpr
         df_roc["threshold"] = thresholds
+
         # best poing法の距離もリスト化
         dim_list1 = []
         for (x, y) in zip(fpr, tpr):
             dim1 = x ** 2 + (1 - y) ** 2
             dim_list1.append(dim1)
         df_roc["dim1"] = dim_list1
+
         # base line法の距離もリスト化
         dim_list2 = []
         for (x, y) in zip(fpr, tpr):
@@ -196,10 +219,13 @@ class AnalysisBinary(object):
         self.train_root = train_root
         self.test_root = test_root
         self.result_file = result_file
+
         # Analysisの基本クラスコンストラクタ
         self.basic = Analysis_Basic(train_root, model, X_val, y_val)
+
         # Analysisの基本クラスの予測を使う
         self.y_pred = self.basic.predict()
+
         # Missクラス、AUCクラスコンストラクタ
         self.miss_class = Miss(
             idx, self.y_pred, y_val, W_val, model, model_folder, test_root, miss_folder)
@@ -210,26 +236,38 @@ class AnalysisBinary(object):
         # folderごとのtrainingデータの数が分かる
         train_dic = num_count(self.train_root)
         test_dic = num_count(self.test_root)
+
         # idxのテストデータにおけるloss,正答率が分かる
         loss_model, accuracy_model = self.basic.accuracy()
+
         # missの数を出力。その際に、回答一覧のｃｓｖファイルも作成
         miss = self.miss_class.miss_csv_making()
+
         # auc_curve→AUC、擬陽性率、真陽性率、閾値のリストをゲット
         self.auc_class.auc_curve()
         roc_auc, fpr, tpr, thresholds = self.auc_class.auc_list
+
         # ROC曲線を作図
         self.auc_class.auc_plot()
+
         # csvファイル作成、およびdim_listを作成しておく。
         self.auc_class.auc_csv()
         dim_list = self.auc_class.sen_spe()
+
         # best point法・・・距離が最も近いもの
         sensitivity1, specificity1, threshold1 = dim_list[0]
+
         # base line法・・・・距離が最も遠いもの
         sensitivity2, specificity2, threshold2 = dim_list[1]
-        return train_dic, test_dic, loss_model, accuracy_model, miss, roc_auc, sensitivity1, specificity1, threshold1, sensitivity2, specificity2, threshold2
 
-    # 初回に行名のみを記入するメソッド
+        return train_dic, test_dic, loss_model, accuracy_model, miss, roc_auc,\
+            sensitivity1, specificity1, threshold1,\
+            sensitivity2, specificity2, threshold2
+
     def result_csv_making_0(self):
+        '''
+        初回に行名のみを記入するメソッド
+        '''
 
         columns_list = []
         train_column_list = [
@@ -247,8 +285,9 @@ class AnalysisBinary(object):
         return
 
     def result_csv_making(self):
-        train_dic, test_dic, loss_model, accuracy_model, miss, roc_auc, sensitivity1, specificity1, threshold1, sensitivity2, specificity2, threshold2 = AnalysisBinary.analysis(
-            self)
+        train_dic, test_dic, loss_model, accuracy_model, miss, roc_auc,\
+            sensitivity1, specificity1, threshold1,\
+            sensitivity2, specificity2, threshold2 = AnalysisBinary.analysis(self)
         df = pd.read_csv(self.result_file)
         df2 = pd.DataFrame()
         for column in train_dic.keys():
@@ -276,16 +315,19 @@ class AnalysisBinary(object):
         AnalysisBinary.result_csv_making(self)
         return
 
-        # AnalysisBinaryで作成されたcsvファイルを分析
-
 
 def summary_analysis(result_file, summary_file, img_root, alpha):
+    '''
+    AnalysisBinaryで作成されたcsvファイルを分析
+    '''
+
     df = pd.read_csv(result_file, encoding="utf-8")
     folder_list = os.listdir(img_root)
     normal_col = "test" + "(" + folder_list[0] + ")"
     des_col = "test" + "(" + folder_list[1] + ")"
     n_normal = sum(df[normal_col])
     n_des = sum(df[des_col])
+
     # AUCについて
     AUC_list = np.array(df["AUC"])
     AUC_mean = np.mean(AUC_list)
@@ -295,6 +337,7 @@ def summary_analysis(result_file, summary_file, img_root, alpha):
     AUC = [AUC_mean, AUC_low, AUC_up]
     print("AUC")
     print(AUC)
+
     # 感度1について
     sensitivity1_list = np.array(df["sensitivity(bestpoint)"])
     sensitivity1_mean = np.mean(sensitivity1_list)
@@ -342,9 +385,9 @@ def summary_analysis(result_file, summary_file, img_root, alpha):
 
     df2.to_csv(summary_file, index=False, encoding="utf-8")
     return
+
+
 # ここまで2値分類
-
-
 # これ以降は多クラス分類
 class AnalysisMulti(object):
     def __init__(self, train_root, test_root, miss_folder, model_folder, result_file,
@@ -352,10 +395,13 @@ class AnalysisMulti(object):
         self.train_root = train_root
         self.test_root = test_root
         self.result_file = result_file
+
         # Analysisの基本クラスコンストラクタ
         self.basic = Analysis_Basic(train_root, model, X_val, y_val)
+
         # Analysisの基本クラスの予測を使う
         self.y_pred = self.basic.predict()
+
         # Missクラス、AUCクラスコンストラクタ
         self.miss_class = Miss(
             idx, self.y_pred, y_val, W_val, model, model_folder, test_root, miss_folder)
@@ -365,14 +411,18 @@ class AnalysisMulti(object):
         # folderごとのtrainingデータの数が分かる
         train_dic = num_count(self.train_root)
         test_dic = num_count(self.test_root)
+
         # idxのテストデータにおけるloss,正答率が分かる
         loss_model, accuracy_model = self.basic.accuracy()
+
         # missの数を出力。その際に、回答一覧のｃｓｖファイルも作成
         miss = self.miss_class.miss_csv_making()
         return train_dic, test_dic, loss_model, accuracy_model, miss
 
-    # 初回に行名のみを記入するメソッド
     def result_csv_making_0(self):
+        '''
+        初回に行名のみを記入するメソッド
+        '''
 
         columns_list = []
         train_column_list = [
