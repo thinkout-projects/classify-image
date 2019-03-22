@@ -2,32 +2,32 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
+# import sys
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
-from utils import folder_create, split_array
-import random
+from utils import folder_create
+# from utils import split_array
+# import random
 
-# Projects.k_fold_split
-# Date: 2018/04/02
-# Filename: k_fold_split
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-__author__ = 'masuo'
-__date__ = "2018/04/02"
+# 層化k分割の交差検証
 
 
 class Split:
-    # コンストラクタ、分割数、元フォルダ、出力先のデータセットフォルダを
     def __init__(self, k, source_folder, dataset_folder):
+        '''
+        コンストラクタ、分割数、元フォルダ、出力先のデータセットフォルダを
+        '''
+
         self.k = k
         self.source_folder = source_folder
         self.dataset_folder = dataset_folder
         self.random_seed = 1
 
-    # 画像用フォルダ
     def k_fold_split(self):
+        '''
+        画像用フォルダ
+        '''
         folder_create(self.dataset_folder)
         # 00_normal,01_Glaなど
         folder_list = os.listdir(self.source_folder)
@@ -44,6 +44,7 @@ class Split:
 
         X = np.array(X)
         y = np.array(y)
+
         # shuffleする、リストにスプリット順に、保存されていく。
         skf = StratifiedKFold(n_splits=self.k, shuffle=True,
                               random_state=self.random_seed)
@@ -62,12 +63,14 @@ class Split:
                 test_folder_list[tag].append(filename)
             train_list.append(train_folder_list)
             test_list.append(test_folder_list)
+
         # スプリット順にcsvに出力
         # trainとtestは別ファイル
         # 00_normalみたいに出力されていく。
         for idx in range(self.k):
             df_train = pd.DataFrame()
             df_test = pd.DataFrame()
+
             # 行（フォルダ）ごとに列を追加していく。
             for col_idx in range(nb_classes):
                 folder_name = folder_list[col_idx]
@@ -80,15 +83,16 @@ class Split:
                 df_test = pd.concat([df_test, pd.DataFrame(
                     ds_test, columns=[folder_name])], axis=1)
 
-            df_train.to_csv(self.dataset_folder + "/" + "train" +
-                            "_" + str(idx) + ".csv", index=False, encoding="utf-8")
-            df_test.to_csv(self.dataset_folder + "/" + "test" +
-                           "_" + str(idx) + ".csv", index=False, encoding="utf-8")
+            df_train.to_csv(self.dataset_folder + "/" + "train" + "_" + str(idx) + ".csv",
+                            index=False, encoding="utf-8")
+            df_test.to_csv(self.dataset_folder + "/" + "test" + "_" + str(idx) + ".csv",
+                           index=False, encoding="utf-8")
         return
 
-    # 画像用フォルダ
-    # IDを考慮した分割
     def k_fold_split_unique(self):
+        '''
+        画像用フォルダ IDを考慮した分割
+        '''
         folder_create(self.dataset_folder)
         # 00_normal,01_Glaなど
         folder_list = os.listdir(self.source_folder)
@@ -135,6 +139,7 @@ class Split:
                         test_folder_list[tag].append(filename)
             train_list.append(train_folder_list)
             test_list.append(test_folder_list)
+
         # スプリット順にcsvに出力
         # trainとtestは別ファイル
         # 00_normalみたいに出力されていく。
@@ -153,8 +158,8 @@ class Split:
                 df_test = pd.concat([df_test, pd.DataFrame(
                     ds_test, columns=[folder_name])], axis=1)
 
-            df_train.to_csv(self.dataset_folder + "/" + "train" +
-                            "_" + str(idx) + ".csv", index=False, encoding="utf-8")
-            df_test.to_csv(self.dataset_folder + "/" + "test" +
-                           "_" + str(idx) + ".csv", index=False, encoding="utf-8")
+            df_train.to_csv(self.dataset_folder + "/" + "train" + "_" + str(idx) + ".csv",
+                            index=False, encoding="utf-8")
+            df_test.to_csv(self.dataset_folder + "/" + "test" + "_" + str(idx) + ".csv",
+                           index=False, encoding="utf-8")
         return
