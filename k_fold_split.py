@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# 層化k分割の交差検証
+
 import os
 # import sys
 import numpy as np
@@ -9,8 +11,6 @@ from sklearn.model_selection import StratifiedKFold
 from utils import folder_create
 # from utils import split_array
 # import random
-
-# 層化k分割の交差検証
 
 
 class Split:
