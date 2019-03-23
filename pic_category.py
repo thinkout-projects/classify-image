@@ -117,7 +117,7 @@ def main():
     split = Split(k, img_root, dataset_folder)
     split.k_fold_split_unique()
     # 分割ごとに
-    for idx in range(k):
+    for idx in range(1):
             # 評価用データについて
         validation = Validation(size, img_root, test_root,
                                 dataset_folder, classes, pic_mode, idx)
