@@ -1,11 +1,11 @@
 # classify-image
-目の医療画像の5クラス分類
-
-## リポジトリについて
-コミットメッセージにもばりばり日本語使うつもりです。  
-現在私がオーナーになってますが、オーナー権の譲渡は出来るので本番環境のリポジトリとして使われる可能性あり。
+Google Colab上で解析を行えるようにした、VGG16など識別系のルーチーンアプリケーションです
 
 ## リポジトリ内のコードの説明について
-コードの説明に関しては
-[HackMD](https://hackmd.io/8N4EXOHFS_mXRj6RD8hDiA)
-を一時編集用として、ここで纏まったものをこのREADME.mdに書くようにするのはどうかと考えています。
+コードの説明に関しては[Wiki](https://github.com/hiroki-mas-med/classify-image/wiki)を参照してください。
+
+## 簡単な使い方の説明
+imgフォルダと同階層にこれらのコードを置いてください。  
+imgフォルダの中身はgrade00、grade01みたいに順番に並んでいる画像フォルダが何個かある。  
+grade00の中には画像フォルダがいっぱい入っている。そんなイメージです。  
+（詳しくは上述の[Wiki](https://github.com/hiroki-mas-med/classify-image/wiki)を参照のこと）
