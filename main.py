@@ -6,6 +6,9 @@
 
 import os
 import sys
+from tqdm import trange
+
+# colabとdriveの同期待ちのため
 from time import sleep
 
 # GPU使用量の調整
@@ -216,8 +219,13 @@ def main():
         # 訓練用フォルダおよびテスト用フォルダを削除する。
         folder_delete(train_root)
         folder_delete(test_root)
+
+        # colabとdriveの同期待ちをする
         print("start wait")
-        sleep(2 * 60)
+        WAITSEC = 120  # 待ち秒数
+        for i in trange(WAITSEC, desc='Waiting for syncing with GDrive'):
+            sleep(1)
+
         print("Next split")
 
     print("start Summary Analysis")
