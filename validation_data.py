@@ -12,6 +12,7 @@ import numpy as np
 # import random
 # from keras.utils import np_utils
 from utils import folder_create, fpath_tag_making, read_img
+from utils import printWithDate
 
 
 class Validation(object):
@@ -74,10 +75,8 @@ class Validation(object):
         if(self.pic_mode == 2):
             y_val = np.array(y_val)
 
-        # class数がいくつか
-        print("%d classes" % self.classes)
-        # validation dataがいくつか。
-        print("test_data = %d" % (len(X_val)))
+        # class数, validation dataがいくつか
+        printWithDate(len(X_val), " files for validation")
         # validationのデータとlabel、ファイルパス
         if(self.pic_mode != 2):
             return (X_val, tag_array, fpath_list)

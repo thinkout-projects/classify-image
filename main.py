@@ -95,6 +95,7 @@ def main():
 
     # 分類数を調べる。
     classes = len(os.listdir(img_root))
+    printWithDate(classes, " classes found")
 
     # ここで、データ拡張の方法を指定。
     folder_list = os.listdir(img_root)
@@ -109,32 +110,29 @@ def main():
     # sizeの指定
     size = [224, 224]
 
-    printWithDate(classes, " classes found, spliting dataset")
     # 分割
+    printWithDate("spliting dataset")
     split = Split(k, img_root, dataset_folder)
     split.k_fold_split_unique()
 
     # 分割ごとに
     for idx in range(k):
-        printWithDate("processing sprited dataset", idx + 1, "/", k,)
+        printWithDate("processing sprited dataset ", idx + 1, "/", k)
 
         # 評価用データについて
+        printWithDate("making data for validation [", idx + 1, "/", k, "]")
         validation = Validation(size, img_root, test_root,
                                 dataset_folder, classes, pic_mode, idx)
         validation.pic_df_test()
-
-        # 画像のデータ、タグ、パスの出力
         X_val, y_val, W_val = validation.pic_gen_data()
-        printWithDate("validation making finished")
 
+        # 訓練用データについて
+        printWithDate("making data for training [", idx + 1, "/", k, "]")
         training = Training(img_root, dataset_folder, train_root, idx, pic_mode,
                             train_num_mode_dic, size, classes, rotation_range,
                             width_shift_range, height_shift_range, shear_range,
                             zoom_range, batch_size)
-
-        # 訓練画像の出力
         training.pic_df_training()
-        printWithDate("Training making finished")
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
@@ -192,7 +190,6 @@ def main():
             # modelをcompileする。
             model_compile(model, loss, optimizer)
             epochs = 20
-            printWithDate("model compile finish")
             learning = Learning(img_root, dataset_folder, train_root, idx, pic_mode,
                                 train_num_mode_dic, size, classes, rotation_range,
                                 width_shift_range, height_shift_range, shear_range,
@@ -200,9 +197,9 @@ def main():
 
             # 訓練実行
             history = learning.learning_model()
-            plot_hist(history, history_folder, idx)
-            printWithDate("Learning finished")
+            printWithDate("Learning finished [", idx + 1, "/", k, "]")
 
+            plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
             if pic_mode == 0:
                 analysis = AnalysisBinary(train_root, test_root, miss_folder,
@@ -217,7 +214,7 @@ def main():
                                          model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
             analysis.result_csv()
-            printWithDate("Analysis finished")
+            printWithDate("Analysis finished [", idx + 1, "/", k, "]")
             model_delete(model, model_folder, idx)
             clear_session()
             tensorflow_backend.clear_session()
@@ -231,7 +228,7 @@ def main():
         for i in trange(WAITSEC, desc='Waiting for syncing with GDrive'):
             sleep(1)
 
-    printWithDate("start Summary Analysis")
+    printWithDate("output Summary Analysis")
     for output_folder in output_folder_list:
         miss_folder = os.path.join(output_folder, "miss")
         result_file = os.path.join(output_folder, "result.csv")
@@ -244,6 +241,7 @@ def main():
         cross_making(miss_folder, k, cross_file)
         miss_summarize(miss_folder, k, miss_file)
 
+    printWithDate("main() function is end")
     return
 
 
