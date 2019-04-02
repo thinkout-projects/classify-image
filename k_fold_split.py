@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 from utils import folder_create
+from utils import printWithDate
 # from utils import split_array
 # import random
 
@@ -99,6 +100,7 @@ class Split:
         nb_classes = len(folder_list)
         X = []
         y = []
+        printWithDate("spliting - loop 1/4")
         for i, folder in enumerate(folder_list):
             # img/00_normal
             folder_path = os.path.join(self.source_folder, folder)
@@ -111,6 +113,7 @@ class Split:
         # 患者IDのみ抽出
         X_unique = []
         y_unique = []
+        printWithDate("spliting - loop 2/4")
         for (i, j) in zip(X, y):
             if((i[:-6] in X_unique) == False):
                 X_unique.append(i[:-6])
@@ -124,6 +127,7 @@ class Split:
         train_list = []
         test_list = []
         # 患者IDのみでデータ分割
+        printWithDate("spliting - loop 3/4")
         for (i, (train_index, test_index)) in enumerate(skf.split(X_unique, y_unique)):
             train_folder_list = [[] for i in range(nb_classes)]
             test_folder_list = [[] for i in range(nb_classes)]
@@ -143,6 +147,7 @@ class Split:
         # スプリット順にcsvに出力
         # trainとtestは別ファイル
         # 00_normalみたいに出力されていく。
+        printWithDate("spliting - loop 4/4")
         for idx in range(self.k):
             df_train = pd.DataFrame()
             df_test = pd.DataFrame()

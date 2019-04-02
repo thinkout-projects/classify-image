@@ -14,6 +14,7 @@ from utils import folder_create, read_img
 # from utils import fpath_tag_making
 from keras.preprocessing.image import ImageDataGenerator
 # from keras.utils import np_utils
+from tqdm import tqdm
 
 # k_fold_split(k,img_root,dataset_folder)
 # train_0.csvなどとなる。columnsはimg_rootにあるフォルダ名
@@ -87,23 +88,23 @@ class Training(object):
             folder_create(train_folder)
             train_list = df_train[column].dropna()
 
-            # 画像ごとに
-            for train_file in train_list:
-                print(train_file)
+            with tqdm(total=len(train_list), desc='for ' + column, leave=True) as pbar:
+                # 画像ごとに
+                for train_file in train_list:
+                    # img/00_normal/画像
+                    img_path = os.path.join(self.source_folder, column, train_file)
+                    src0 = cv2.imread(img_path)
+                    file_without = train_file.split(".")[0]
 
-                # img/00_normal/画像
-                img_path = os.path.join(self.source_folder, column, train_file)
-                src0 = cv2.imread(img_path)
-                file_without = train_file.split(".")[0]
-
-                # train_num_mode_dicはフォルダ名をKeyとして、numとmodeのリストを保持している。
-                # num・・・9個の変換の中で指定の数だけを作成する。
-                # mode・・・0なら左右反転なし、1なら左右反転あり。
-                num_mode = self.train_num_mode_dic[column]
-                num = num_mode[0]
-                mode = num_mode[1]
-                num_list = random.sample(range(9), num)
-                data_augment(train_folder, file_without, src0, num_list, mode)
+                    # train_num_mode_dicはフォルダ名をKeyとして、numとmodeのリストを保持している。
+                    # num・・・9個の変換の中で指定の数だけを作成する。
+                    # mode・・・0なら左右反転なし、1なら左右反転あり。
+                    num_mode = self.train_num_mode_dic[column]
+                    num = num_mode[0]
+                    mode = num_mode[1]
+                    num_list = random.sample(range(9), num)
+                    data_augment(train_folder, file_without, src0, num_list, mode)
+                    pbar.update(1)
         return
 
     def data_gen(self, X_train):

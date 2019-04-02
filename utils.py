@@ -13,6 +13,21 @@ import cv2
 import glob
 from keras.utils import np_utils
 
+from pytz import timezone
+from datetime import datetime
+
+
+def printWithDate(*printee):
+    '''
+    通常のprint文に加え、[ yyyy/mm/dd hh:mm:ss ] を文頭に挿入する。
+    ただし、`sep`, `end`, `file`, `flush`は使用不可能。
+    '''
+    print("[", datetime.now().astimezone(timezone('Asia/Tokyo')).strftime("%Y/%m/%d %H:%M:%S"), "] ", end="")
+    for i in printee:
+        print(i, end="")
+    print()
+    return
+
 
 def folder_create(folder):
     if not os.path.isdir(folder):
