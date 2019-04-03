@@ -62,11 +62,26 @@ def main():
     # k-Foldの分割数を指定
     k = 5
 
-    # 0なら2値分類
-    # 1なら多クラス分類
-    # 2なら回帰(imgフォルダに適当な名前("_"禁止)で1フォルダだけ作成し、その中にすべての画像を入れる)
-    #           画像のファイル名は"{ターゲット}_{元々のファイル名}"に修正しておく
-    pic_mode = 1
+
+    # PIC_MODE = 0
+    # 処理
+    #   2値分類
+    # 解析結果
+    #   AUC、感度・特異度
+
+    PIC_MODE = 1
+    # 処理
+    #   多クラス分類
+    # 解析結果
+    #   正答率のみ
+
+    # PIC_MODE = 2
+    # 処理
+    #   回帰
+    # データセットの準備
+    #   imgフォルダに適当な名前("_"禁止)で1フォルダだけ作成し、その中にすべての画像を入れる
+    #   画像のファイル名は"{ターゲット}_{元々のファイル名}"に修正しておく
+    
 
     # batch_sizeを指定
     batch_size = 32
@@ -122,13 +137,13 @@ def main():
         # 評価用データについて
         printWithDate("making data for validation [", idx + 1, "/", k, "]")
         validation = Validation(size, img_root, test_root,
-                                dataset_folder, classes, pic_mode, idx)
+                                dataset_folder, classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
         printWithDate("making data for training [", idx + 1, "/", k, "]")
-        training = Training(img_root, dataset_folder, train_root, idx, pic_mode,
+        training = Training(img_root, dataset_folder, train_root, idx, PIC_MODE,
                             train_num_mode_dic, size, classes, rotation_range,
                             width_shift_range, height_shift_range, shear_range,
                             zoom_range, batch_size)
@@ -148,7 +163,7 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models(size, classes, pic_mode)
+            model_ch = Models(size, classes, PIC_MODE)
             """
             if out_i == 0:
                 model = model_ch.vgg16()
@@ -173,24 +188,24 @@ def main():
                 model = model_ch.vgg16()
 
             # optimizerはSGD
-            if(pic_mode != 2):
+            if(PIC_MODE != 2):
                 optimizer = SGD(lr=0.0001, decay=1e-6, momentum=0.9,
                                 nesterov=True)  # Adam(lr = 0.0005)
             else:
                 optimizer = Adam(lr=0.0001)
 
             # lossは画像解析のモードによる。
-            if pic_mode == 0:
+            if PIC_MODE == 0:
                 loss = "binary_crossentropy"
-            elif pic_mode == 1:
+            elif PIC_MODE == 1:
                 loss = "categorical_crossentropy"
-            elif pic_mode == 2:
+            elif PIC_MODE == 2:
                 loss = "mean_squared_error"
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
             epochs = 20
-            learning = Learning(img_root, dataset_folder, train_root, idx, pic_mode,
+            learning = Learning(img_root, dataset_folder, train_root, idx, PIC_MODE,
                                 train_num_mode_dic, size, classes, rotation_range,
                                 width_shift_range, height_shift_range, shear_range,
                                 zoom_range, batch_size, model_folder, model, X_val, y_val, epochs)
@@ -201,15 +216,15 @@ def main():
 
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
-            if pic_mode == 0:
+            if PIC_MODE == 0:
                 analysis = AnalysisBinary(train_root, test_root, miss_folder,
                                           model_folder, roc_folder, result_file,
                                           model, X_val, y_val, W_val, idx)
-            elif pic_mode == 1:
+            elif PIC_MODE == 1:
                 analysis = AnalysisMulti(train_root, test_root, miss_folder,
                                          model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
-            elif pic_mode == 2:
+            elif PIC_MODE == 2:
                 analysis = AnalysisMulti(train_root, test_root, miss_folder,
                                          model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
@@ -236,7 +251,7 @@ def main():
         cross_file = os.path.join(output_folder, "cross.csv")
         miss_file = os.path.join(output_folder, "miss_summary.csv")
 
-        if pic_mode == 0:
+        if PIC_MODE == 0:
             summary_analysis(result_file, summary_file, img_root, alpha)
         cross_making(miss_folder, k, cross_file)
         miss_summarize(miss_folder, k, miss_file)
