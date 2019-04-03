@@ -82,21 +82,21 @@ def main():
     # 重たい時には少なくしてください。
     BATCH_SIZE = 32
 
-    # data拡張の際の変数を指定
-    rotation_range = 2
-    width_shift_range = 0.01
-    height_shift_range = 0.01
-    shear_range = 0
-    zoom_range = 0.1
+    # data拡張の際(ImageDataGenerator)の引数を指定(基本的にそのままで良い)
+    ROTATION_RANGE = 2
+    WIDTH_SHIFT_RANGE = 0.01
+    HEIGHT_SHIFT_RANGE = 0.01
+    SHEAR_RANGE = 0
+    ZOOM_RANGE = 0.1
 
     # 統計解析の信頼区間を指定
     alpha = 0.95
 
-    # 各種フォルダ名指定
-    IMG_ROOT = "img"
-    DATASET_FOLDER = "dataset"
-    TRAIN_ROOT = "train"
-    TEST_ROOT = "test"
+    # 各種フォルダ名指定(基本的にそのままで良い)
+    IMG_ROOT = "img"  # 画像のフォルダ
+    DATASET_FOLDER = "dataset"  # 分割したデータのファイル名が記載されたcsvファイルのフォルダ
+    TRAIN_ROOT = "train"  # 訓練用画像が出力されるフォルダ (解析終了後は削除される)
+    TEST_ROOT = "test"  # 評価用画像が出力されるフォルダ (解析終了後は削除される)
 
     # 解析に使うモデルのネットワーク構造の指定
     # 例えば、VGG16とVGG19で解析するならば、["VGG16", "VGG19"]みたいにしてください。
@@ -153,9 +153,9 @@ def main():
         # 訓練用データについて
         printWithDate(f'making data for training [{idx + 1}/{K}]')
         training = Training(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
-                            train_num_mode_dic, IMG_SIZE, classes, rotation_range,
-                            width_shift_range, height_shift_range, shear_range,
-                            zoom_range, BATCH_SIZE)
+                            train_num_mode_dic, IMG_SIZE, classes, ROTATION_RANGE,
+                            WIDTH_SHIFT_RANGE, HEIGHT_SHIFT_RANGE, SHEAR_RANGE,
+                            ZOOM_RANGE, BATCH_SIZE)
         training.pic_df_training()
 
         # model定義
@@ -215,9 +215,9 @@ def main():
             model_compile(model, loss, optimizer)
             epochs = 20
             learning = Learning(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
-                                train_num_mode_dic, IMG_SIZE, classes, rotation_range,
-                                width_shift_range, height_shift_range, shear_range,
-                                zoom_range, BATCH_SIZE, model_folder, model, X_val, y_val, epochs)
+                                train_num_mode_dic, IMG_SIZE, classes, ROTATION_RANGE,
+                                WIDTH_SHIFT_RANGE, HEIGHT_SHIFT_RANGE, SHEAR_RANGE,
+                                ZOOM_RANGE, BATCH_SIZE, model_folder, model, X_val, y_val, epochs)
 
             # 訓練実行
             history = learning.learning_model()
