@@ -97,23 +97,23 @@ def main():
     alpha = 0.95
 
     # 各種フォルダ名指定
-    img_root = "img"
-    dataset_folder = "dataset"
-    train_root = "train"
-    test_root = "test"
-    # output_folder_list = ["VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
+    IMG_ROOT = "img"
+    DATASET_FOLDER = "dataset"
+    TRAIN_ROOT = "train"
+    TEST_ROOT = "test"
+    # OUTPUT_FOLDER_LIST = ["VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
     #                       "InceptionResNetV2","InceptionV3","ResNet50","Xception"]
-    output_folder_list = ["VGG16"]
+    OUTPUT_FOLDER_LIST = ["VGG16"]
 
     # desktop.iniの削除
-    folder_clean(img_root)
+    folder_clean(IMG_ROOT)
 
     # 分類数を調べる。
-    classes = len(os.listdir(img_root))
+    classes = len(os.listdir(IMG_ROOT))
     printWithDate(classes, " classes found")
 
     # ここで、データ拡張の方法を指定。
-    folder_list = os.listdir(img_root)
+    folder_list = os.listdir(IMG_ROOT)
     train_num_mode_dic = {}
     # 1881 1907 2552 1493 232
 
@@ -127,7 +127,7 @@ def main():
 
     # 分割
     printWithDate("spliting dataset")
-    split = Split(k, img_root, dataset_folder)
+    split = Split(k, IMG_ROOT, DATASET_FOLDER)
     split.k_fold_split_unique()
 
     # 分割ごとに
@@ -136,14 +136,14 @@ def main():
 
         # 評価用データについて
         printWithDate("making data for validation [", idx + 1, "/", k, "]")
-        validation = Validation(size, img_root, test_root,
-                                dataset_folder, classes, PIC_MODE, idx)
+        validation = Validation(size, IMG_ROOT, TEST_ROOT,
+                                DATASET_FOLDER, classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
         printWithDate("making data for training [", idx + 1, "/", k, "]")
-        training = Training(img_root, dataset_folder, train_root, idx, PIC_MODE,
+        training = Training(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
                             train_num_mode_dic, size, classes, rotation_range,
                             width_shift_range, height_shift_range, shear_range,
                             zoom_range, batch_size)
@@ -151,7 +151,7 @@ def main():
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
-        for out_i, output_folder in enumerate(output_folder_list):
+        for out_i, output_folder in enumerate(OUTPUT_FOLDER_LIST):
             folder_create(output_folder)
             history_folder = os.path.join(output_folder, "history")
             model_folder = os.path.join(output_folder, "model")
@@ -205,7 +205,7 @@ def main():
             # modelをcompileする。
             model_compile(model, loss, optimizer)
             epochs = 20
-            learning = Learning(img_root, dataset_folder, train_root, idx, PIC_MODE,
+            learning = Learning(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
                                 train_num_mode_dic, size, classes, rotation_range,
                                 width_shift_range, height_shift_range, shear_range,
                                 zoom_range, batch_size, model_folder, model, X_val, y_val, epochs)
@@ -217,15 +217,15 @@ def main():
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
             if PIC_MODE == 0:
-                analysis = AnalysisBinary(train_root, test_root, miss_folder,
+                analysis = AnalysisBinary(TRAIN_ROOT, TEST_ROOT, miss_folder,
                                           model_folder, roc_folder, result_file,
                                           model, X_val, y_val, W_val, idx)
             elif PIC_MODE == 1:
-                analysis = AnalysisMulti(train_root, test_root, miss_folder,
+                analysis = AnalysisMulti(TRAIN_ROOT, TEST_ROOT, miss_folder,
                                          model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
             elif PIC_MODE == 2:
-                analysis = AnalysisMulti(train_root, test_root, miss_folder,
+                analysis = AnalysisMulti(TRAIN_ROOT, TEST_ROOT, miss_folder,
                                          model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
             analysis.result_csv()
@@ -235,8 +235,8 @@ def main():
             tensorflow_backend.clear_session()
 
         # 訓練用フォルダおよびテスト用フォルダを削除する。
-        folder_delete(train_root)
-        folder_delete(test_root)
+        folder_delete(TRAIN_ROOT)
+        folder_delete(TEST_ROOT)
 
         # colabとdriveの同期待ちをする
         WAITSEC = 120  # 待ち秒数
@@ -244,7 +244,7 @@ def main():
             sleep(1)
 
     printWithDate("output Summary Analysis")
-    for output_folder in output_folder_list:
+    for output_folder in OUTPUT_FOLDER_LIST:
         miss_folder = os.path.join(output_folder, "miss")
         result_file = os.path.join(output_folder, "result.csv")
         summary_file = os.path.join(output_folder, "summary.csv")
@@ -252,7 +252,7 @@ def main():
         miss_file = os.path.join(output_folder, "miss_summary.csv")
 
         if PIC_MODE == 0:
-            summary_analysis(result_file, summary_file, img_root, alpha)
+            summary_analysis(result_file, summary_file, IMG_ROOT, alpha)
         cross_making(miss_folder, k, cross_file)
         miss_summarize(miss_folder, k, miss_file)
 
