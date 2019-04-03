@@ -108,6 +108,9 @@ def main():
     # 画像サイズ(解像度)の指定
     IMG_SIZE = [224, 224]
 
+    # エポック数の指定
+    EPOCHS = 20
+
     # colabとdriveの同期を待つ時間(秒単位)
     # ローカルでこのコードを実行する場合、待つ必要はないので0を推奨
     WAITSEC = 120
@@ -213,11 +216,10 @@ def main():
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
-            epochs = 20
             learning = Learning(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
                                 train_num_mode_dic, IMG_SIZE, classes, ROTATION_RANGE,
                                 WIDTH_SHIFT_RANGE, HEIGHT_SHIFT_RANGE, SHEAR_RANGE,
-                                ZOOM_RANGE, BATCH_SIZE, model_folder, model, X_val, y_val, epochs)
+                                ZOOM_RANGE, BATCH_SIZE, model_folder, model, X_val, y_val, EPOCHS)
 
             # 訓練実行
             history = learning.learning_model()
