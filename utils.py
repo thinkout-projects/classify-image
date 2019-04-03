@@ -81,9 +81,9 @@ def split_array(ar, n_group):
 
 def list_shuffle(a, b, seed):
     np.random.seed(seed)
-    l = list(zip(a, b))
-    np.random.shuffle(l)
-    a1, b1 = zip(*l)
+    list_ = list(zip(a, b))
+    np.random.shuffle(list_)
+    a1, b1 = zip(*list_)
     a2 = list(a1)
     b2 = list(b1)
     return a2, b2
