@@ -97,6 +97,10 @@ def main():
     DATASET_FOLDER = "dataset"
     TRAIN_ROOT = "train"
     TEST_ROOT = "test"
+
+    # 解析に使うモデルのネットワーク構造の指定
+    # 例えば、VGG16とVGG19で解析するならば、["VGG16", "VGG19"]みたいにしてください。
+    # 現時点で実装されているネットワーク構造を全て使った例
     # OUTPUT_FOLDER_LIST = ["VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
     #                       "InceptionResNetV2","InceptionV3","ResNet50","Xception"]
     OUTPUT_FOLDER_LIST = ["VGG16"]
