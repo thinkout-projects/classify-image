@@ -62,7 +62,6 @@ def main():
     # k-Foldの分割数を指定
     k = 5
 
-
     # PIC_MODE = 0
     # 処理
     #   2値分類
@@ -81,7 +80,6 @@ def main():
     # データセットの準備
     #   imgフォルダに適当な名前("_"禁止)で1フォルダだけ作成し、その中にすべての画像を入れる
     #   画像のファイル名は"{ターゲット}_{元々のファイル名}"に修正しておく
-    
 
     # batch_sizeを指定
     batch_size = 32
@@ -110,7 +108,7 @@ def main():
 
     # 分類数を調べる。
     classes = len(os.listdir(IMG_ROOT))
-    printWithDate(classes, " classes found")
+    printWithDate(f'{classes} classes found')
 
     # ここで、データ拡張の方法を指定。
     folder_list = os.listdir(IMG_ROOT)
@@ -132,17 +130,17 @@ def main():
 
     # 分割ごとに
     for idx in range(k):
-        printWithDate("processing sprited dataset ", idx + 1, "/", k)
+        printWithDate(f'processing sprited dataset {idx + 1} / {k}')
 
         # 評価用データについて
-        printWithDate("making data for validation [", idx + 1, "/", k, "]")
+        printWithDate(f'making data for validation [{idx + 1}/{k}]')
         validation = Validation(size, IMG_ROOT, TEST_ROOT,
                                 DATASET_FOLDER, classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
-        printWithDate("making data for training [", idx + 1, "/", k, "]")
+        printWithDate(f'making data for training [{idx + 1}/{k}]')
         training = Training(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
                             train_num_mode_dic, size, classes, rotation_range,
                             width_shift_range, height_shift_range, shear_range,
@@ -212,7 +210,7 @@ def main():
 
             # 訓練実行
             history = learning.learning_model()
-            printWithDate("Learning finished [", idx + 1, "/", k, "]")
+            printWithDate(f'Learning finished [{idx + 1}/{k}]')
 
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
@@ -229,7 +227,7 @@ def main():
                                          model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
             analysis.result_csv()
-            printWithDate("Analysis finished [", idx + 1, "/", k, "]")
+            printWithDate(f'Analysis finished [{idx + 1}/{k}]')
             model_delete(model, model_folder, idx)
             clear_session()
             tensorflow_backend.clear_session()
