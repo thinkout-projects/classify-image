@@ -49,9 +49,6 @@ from auc_analysis import summary_analysis, cross_making, miss_summarize
 def main():
     printWithDate("main() function is started")
 
-    # 作業ディレクトリを自身のファイルのディレクトリに変更
-    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
-
     # GPUに過負荷がかかると実行できなくなる。∴余力を持たしておく必要がある。
     # 50％のみを使用することとする
     config = tf.ConfigProto()
@@ -103,6 +100,18 @@ def main():
     #                       "InceptionResNetV2","InceptionV3","ResNet50","Xception"]
     OUTPUT_FOLDER_LIST = ["VGG16"]
 
+    # 画像サイズ(解像度)の指定
+    size = [224, 224]
+
+    # colabとdriveの同期を待つ時間(秒単位)
+    # ローカルでこのコードを実行する場合、待つ必要はないので0を推奨
+    WAITSEC = 120
+
+    # ここから具体的な処理を開始
+
+    # 作業ディレクトリを自身のファイルのディレクトリに変更
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
     # desktop.iniの削除
     folder_clean(IMG_ROOT)
 
@@ -119,9 +128,6 @@ def main():
         train_num_mode_dic[folder] = [1, 1]
         if i == 2 or i == 3 or i == 4:
             train_num_mode_dic[folder] = [9, 1]
-
-    # sizeの指定
-    size = [224, 224]
 
     # 分割
     printWithDate("spliting dataset")
@@ -237,7 +243,6 @@ def main():
         folder_delete(TEST_ROOT)
 
         # colabとdriveの同期待ちをする
-        WAITSEC = 120  # 待ち秒数
         for i in trange(WAITSEC, desc='Waiting for syncing with GDrive'):
             sleep(1)
 
