@@ -78,8 +78,9 @@ def main():
     #   imgフォルダに適当な名前("_"禁止)で1フォルダだけ作成し、その中にすべての画像を入れる
     #   画像のファイル名は"{ターゲット}_{元々のファイル名}"に修正しておく
 
-    # batch_sizeを指定
-    batch_size = 32
+    # バッチサイズを指定
+    # 重たい時には少なくしてください。
+    BATCH_SIZE = 32
 
     # data拡張の際の変数を指定
     rotation_range = 2
@@ -150,7 +151,7 @@ def main():
         training = Training(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
                             train_num_mode_dic, size, classes, rotation_range,
                             width_shift_range, height_shift_range, shear_range,
-                            zoom_range, batch_size)
+                            zoom_range, BATCH_SIZE)
         training.pic_df_training()
 
         # model定義
@@ -212,7 +213,7 @@ def main():
             learning = Learning(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
                                 train_num_mode_dic, size, classes, rotation_range,
                                 width_shift_range, height_shift_range, shear_range,
-                                zoom_range, batch_size, model_folder, model, X_val, y_val, epochs)
+                                zoom_range, BATCH_SIZE, model_folder, model, X_val, y_val, epochs)
 
             # 訓練実行
             history = learning.learning_model()
