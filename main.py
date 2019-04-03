@@ -106,7 +106,7 @@ def main():
     OUTPUT_FOLDER_LIST = ["VGG16"]
 
     # 画像サイズ(解像度)の指定
-    size = [224, 224]
+    IMG_SIZE = [224, 224]
 
     # colabとdriveの同期を待つ時間(秒単位)
     # ローカルでこのコードを実行する場合、待つ必要はないので0を推奨
@@ -145,7 +145,7 @@ def main():
 
         # 評価用データについて
         printWithDate(f'making data for validation [{idx + 1}/{k}]')
-        validation = Validation(size, IMG_ROOT, TEST_ROOT,
+        validation = Validation(IMG_SIZE, IMG_ROOT, TEST_ROOT,
                                 DATASET_FOLDER, classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
@@ -153,7 +153,7 @@ def main():
         # 訓練用データについて
         printWithDate(f'making data for training [{idx + 1}/{k}]')
         training = Training(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
-                            train_num_mode_dic, size, classes, rotation_range,
+                            train_num_mode_dic, IMG_SIZE, classes, rotation_range,
                             width_shift_range, height_shift_range, shear_range,
                             zoom_range, BATCH_SIZE)
         training.pic_df_training()
@@ -172,7 +172,7 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models(size, classes, PIC_MODE)
+            model_ch = Models(IMG_SIZE, classes, PIC_MODE)
             """
             if out_i == 0:
                 model = model_ch.vgg16()
@@ -215,7 +215,7 @@ def main():
             model_compile(model, loss, optimizer)
             epochs = 20
             learning = Learning(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
-                                train_num_mode_dic, size, classes, rotation_range,
+                                train_num_mode_dic, IMG_SIZE, classes, rotation_range,
                                 width_shift_range, height_shift_range, shear_range,
                                 zoom_range, BATCH_SIZE, model_folder, model, X_val, y_val, epochs)
 
