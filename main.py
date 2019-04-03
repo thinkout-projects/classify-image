@@ -57,7 +57,7 @@ def main():
     set_session(tf.Session(config=config))
 
     # k-Foldの分割数を指定
-    k = 5
+    K = 5
 
     # PIC_MODE = 0
     # 処理
@@ -136,22 +136,22 @@ def main():
 
     # 分割
     printWithDate("spliting dataset")
-    split = Split(k, IMG_ROOT, DATASET_FOLDER)
+    split = Split(K, IMG_ROOT, DATASET_FOLDER)
     split.k_fold_split_unique()
 
     # 分割ごとに
-    for idx in range(k):
-        printWithDate(f'processing sprited dataset {idx + 1} / {k}')
+    for idx in range(K):
+        printWithDate(f'processing sprited dataset {idx + 1} / {K}')
 
         # 評価用データについて
-        printWithDate(f'making data for validation [{idx + 1}/{k}]')
+        printWithDate(f'making data for validation [{idx + 1}/{K}]')
         validation = Validation(IMG_SIZE, IMG_ROOT, TEST_ROOT,
                                 DATASET_FOLDER, classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
-        printWithDate(f'making data for training [{idx + 1}/{k}]')
+        printWithDate(f'making data for training [{idx + 1}/{K}]')
         training = Training(IMG_ROOT, DATASET_FOLDER, TRAIN_ROOT, idx, PIC_MODE,
                             train_num_mode_dic, IMG_SIZE, classes, rotation_range,
                             width_shift_range, height_shift_range, shear_range,
@@ -221,7 +221,7 @@ def main():
 
             # 訓練実行
             history = learning.learning_model()
-            printWithDate(f'Learning finished [{idx + 1}/{k}]')
+            printWithDate(f'Learning finished [{idx + 1}/{K}]')
 
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
@@ -238,7 +238,7 @@ def main():
                                          model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
             analysis.result_csv()
-            printWithDate(f'Analysis finished [{idx + 1}/{k}]')
+            printWithDate(f'Analysis finished [{idx + 1}/{K}]')
             model_delete(model, model_folder, idx)
             clear_session()
             tensorflow_backend.clear_session()
@@ -261,8 +261,8 @@ def main():
 
         if PIC_MODE == 0:
             summary_analysis(result_file, summary_file, IMG_ROOT, alpha)
-        cross_making(miss_folder, k, cross_file)
-        miss_summarize(miss_folder, k, miss_file)
+        cross_making(miss_folder, K, cross_file)
+        miss_summarize(miss_folder, K, miss_file)
 
     printWithDate("main() function is end")
     return
