@@ -57,6 +57,7 @@ def main():
     set_session(tf.Session(config=config))
 
     # k-Foldの分割数を指定
+    # hold out法を使用する場合はK = 1とすること
     K = 5
 
     # PIC_MODE = 0
