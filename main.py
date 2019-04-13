@@ -164,7 +164,7 @@ def main():
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
-        for out_i, output_folder in enumerate(OUTPUT_FOLDER_LIST):
+        for output_folder in OUTPUT_FOLDER_LIST:
             folder_create(output_folder)
             history_folder = os.path.join(output_folder, "history")
             model_folder = os.path.join(output_folder, "model")
@@ -177,28 +177,25 @@ def main():
             # "VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
             model_ch = Models(IMG_SIZE, classes, PIC_MODE)
-            """
-            if out_i == 0:
+
+            if output_folder == 'VGG16':
                 model = model_ch.vgg16()
-            elif out_i == 1:
+            elif output_folder == 'VGG19':
                 model = model_ch.vgg19()
-            elif out_i == 2:
+            elif output_folder == 'DenseNet121':
                 model = model_ch.dense121()
-            elif out_i == 3:
+            elif output_folder == 'DenseNet169':
                 model = model_ch.dense169()
-            elif out_i == 4:
+            elif output_folder == 'DenseNet201':
                 model = model_ch.dense201()
-            elif out_i == 5:
+            elif output_folder == 'InceptionResNetV2':
                 model = model_ch.inception_resnet2()
-            elif out_i == 6:
+            elif output_folder == 'InceptionV3':
                 model = model_ch.inception3()
-            elif out_i == 7:
+            elif output_folder == 'ResNet50':
                 model = model_ch.resnet50()
-            elif out_i == 8:
+            elif output_folder == 'Xception':
                 model = model_ch.xception()
-            """
-            if out_i == 0:
-                model = model_ch.vgg16()
 
             # optimizerはSGD
             if(PIC_MODE != 2):
