@@ -134,6 +134,9 @@ def main():
     # 1881 1907 2552 1493 232
 
     for i, folder in enumerate(folder_list):
+        # train_num_mode_dic[a,b]: データ拡張の引数
+        # a: 1-9。9種類の中から、randomにa種類の処理を行う。
+        # b: 0,1のどちらか。0なら左右反転無し、1なら左右反転をしてデータ数を２倍にする。
         train_num_mode_dic[folder] = [1, 1]
         if i == 2 or i == 3 or i == 4:
             train_num_mode_dic[folder] = [9, 1]
