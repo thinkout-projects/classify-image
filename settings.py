@@ -4,8 +4,9 @@ class Settings:
     """
 
     # k-Fold法の分割数を指定
+    # 基本的にはk=5で良いと思います
     # hold out法を使用する場合は K=1 とすること
-    K = 2
+    K = 5
 
     # PIC_MODE: 解析のモードを指定
     # PIC_MODE = 0: 2値分類
@@ -24,7 +25,7 @@ class Settings:
 
     # バッチサイズを指定
     # 重たい時には少なくしてください。
-    BATCH_SIZE = 4
+    BATCH_SIZE = 32
 
     # data拡張の際(ImageDataGenerator)の引数を指定(基本的にそのままで良い)
     ROTATION_RANGE = 2
@@ -34,7 +35,7 @@ class Settings:
     ZOOM_RANGE = 0.1
 
     # data拡張のオプション
-    NUM_OF_AUGS = 9  # 1-9で指定。9種類の中からランダムに(NUM_OF_AUGS)種類の処理を行う。
+    NUM_OF_AUGS = 5  # 1-9で指定。9種類の中からランダムに(NUM_OF_AUGS)種類の処理を行う。
     USE_FLIP = True  # Falseなら左右反転無し、Trueなら左右反転してデータ数を２倍にする。
 
     # 各種フォルダ名指定(基本的にそのままで良い)
@@ -54,7 +55,7 @@ class Settings:
     IMG_SIZE = [224, 224]
 
     # エポック数の指定
-    EPOCHS = 5
+    EPOCHS = 20
 
     # 統計解析の信頼区間を指定
     ALPHA = 0.95
