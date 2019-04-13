@@ -98,9 +98,10 @@ def main():
 
         # 訓練用データについて
         printWithDate(f'making data for training [{idx + 1}/{settings.K}]')
-        training = Training(settings.IMG_ROOT, settings.DATASET_FOLDER, settings.TRAIN_ROOT, idx, settings.PIC_MODE,
-                            train_num_mode_dic, settings.IMG_SIZE, classes, settings.ROTATION_RANGE,
-                            settings.WIDTH_SHIFT_RANGE, settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
+        training = Training(settings.IMG_ROOT, settings.DATASET_FOLDER, settings.TRAIN_ROOT,
+                            idx, settings.PIC_MODE, train_num_mode_dic, settings.IMG_SIZE,
+                            classes, settings.ROTATION_RANGE, settings.WIDTH_SHIFT_RANGE,
+                            settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
                             settings.ZOOM_RANGE, settings.BATCH_SIZE)
         training.pic_df_training()
 
@@ -116,7 +117,7 @@ def main():
             summary_file = os.path.join(output_folder, "summary.csv")
             cross_file = os.path.join(output_folder, "cross.csv")
             miss_file = os.path.join(output_folder, "miss_summary.csv")
-            # "VGG19","DenseNet121","DenseNet169","DenseNet201",
+            # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
             model_ch = Models(settings.IMG_SIZE, classes, settings.PIC_MODE)
 
@@ -156,10 +157,12 @@ def main():
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
-            learning = Learning(settings.IMG_ROOT, settings.DATASET_FOLDER, settings.TRAIN_ROOT, idx, settings.PIC_MODE,
-                                train_num_mode_dic, settings.IMG_SIZE, classes, settings.ROTATION_RANGE,
-                                settings.WIDTH_SHIFT_RANGE, settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
-                                settings.ZOOM_RANGE, settings.BATCH_SIZE, model_folder, model, X_val, y_val, settings.EPOCHS)
+            learning = Learning(settings.IMG_ROOT, settings.DATASET_FOLDER, settings.TRAIN_ROOT,
+                                idx, settings.PIC_MODE, train_num_mode_dic, settings.IMG_SIZE,
+                                classes, settings.ROTATION_RANGE, settings.WIDTH_SHIFT_RANGE,
+                                settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
+                                settings.ZOOM_RANGE, settings.BATCH_SIZE,
+                                model_folder, model, X_val, y_val, settings.EPOCHS)
 
             # 訓練実行
             history = learning.learning_model()
@@ -168,16 +171,16 @@ def main():
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
             if settings.PIC_MODE == 0:
-                analysis = AnalysisBinary(settings.TRAIN_ROOT, settings.TEST_ROOT, miss_folder,
-                                          model_folder, roc_folder, result_file,
+                analysis = AnalysisBinary(settings.TRAIN_ROOT, settings.TEST_ROOT,
+                                          miss_folder, model_folder, roc_folder, result_file,
                                           model, X_val, y_val, W_val, idx)
             elif settings.PIC_MODE == 1:
-                analysis = AnalysisMulti(settings.TRAIN_ROOT, settings.TEST_ROOT, miss_folder,
-                                         model_folder, result_file,
+                analysis = AnalysisMulti(settings.TRAIN_ROOT, settings.TEST_ROOT,
+                                         miss_folder, model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
             elif settings.PIC_MODE == 2:
-                analysis = AnalysisMulti(settings.TRAIN_ROOT, settings.TEST_ROOT, miss_folder,
-                                         model_folder, result_file,
+                analysis = AnalysisMulti(settings.TRAIN_ROOT, settings.TEST_ROOT,
+                                         miss_folder, model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
             analysis.result_csv()
             printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
