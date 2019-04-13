@@ -148,7 +148,7 @@ def main():
 
     # 分割ごとに
     for idx in range(K):
-        printWithDate(f'processing sprited dataset {idx + 1} / {K}')
+        printWithDate(f'processing sprited dataset {idx + 1}/{K}')
 
         # 評価用データについて
         printWithDate(f'making data for validation [{idx + 1}/{K}]')
