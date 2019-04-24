@@ -13,6 +13,7 @@ import numpy as np
 # from keras.utils import np_utils
 from utils import folder_create, fpath_tag_making, read_img
 from utils import printWithDate
+from tqdm import tqdm
 
 
 class Validation(object):
@@ -48,12 +49,15 @@ class Validation(object):
             test_folder = os.path.join(self.test_root, column)
             folder_create(test_folder)
             test_list = df_test[column].dropna()
-            for test_file in test_list:
-                # img/ 00_normal/ filename
-                img_path = os.path.join(self.source_folder, column, test_file)
-                # test/00_normal/filename
-                new_path = os.path.join(test_folder, test_file)
-                shutil.copy(img_path, new_path)
+
+            with tqdm(total=len(test_list), desc='for ' + column, leave=True) as pbar:
+                for test_file in test_list:
+                    # img/ 00_normal/ filename
+                    img_path = os.path.join(self.source_folder, column, test_file)
+                    # test/00_normal/filename
+                    new_path = os.path.join(test_folder, test_file)
+                    shutil.copy(img_path, new_path)
+                    pbar.update(1)
         return
 
     def pic_gen_data(self):

@@ -45,12 +45,12 @@ from utils import model_load, model_delete
 from auc_analysis import AnalysisBinary, AnalysisMulti
 from auc_analysis import summary_analysis, cross_making, miss_summarize
 
+# 設定ファイルの読み込み
+from settings import Settings
+
 
 def main():
     printWithDate("main() function is started")
-
-    # 作業ディレクトリを自身のファイルのディレクトリに変更
-    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     # GPUに過負荷がかかると実行できなくなる。∴余力を持たしておく必要がある。
     # 50％のみを使用することとする
@@ -59,84 +59,55 @@ def main():
     config.gpu_options.allow_growth = True
     set_session(tf.Session(config=config))
 
-    # k-Foldの分割数を指定
-    k = 5
+    # 作業ディレクトリを自身のファイルのディレクトリに変更
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-    # 0なら2値分類
-    # 1なら多クラス分類
-    # 2なら回帰(imgフォルダに適当な名前("_"禁止)で1フォルダだけ作成し、その中にすべての画像を入れる)
-    #           画像のファイル名は"{ターゲット}_{元々のファイル名}"に修正しておく
-    pic_mode = 1
-
-    # batch_sizeを指定
-    batch_size = 32
-
-    # data拡張の際の変数を指定
-    rotation_range = 2
-    width_shift_range = 0.01
-    height_shift_range = 0.01
-    shear_range = 0
-    zoom_range = 0.1
-
-    # 統計解析の信頼区間を指定
-    alpha = 0.95
-
-    # 各種フォルダ名指定
-    img_root = "img"
-    dataset_folder = "dataset"
-    train_root = "train"
-    test_root = "test"
-    # output_folder_list = ["VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
-    #                       "InceptionResNetV2","InceptionV3","ResNet50","Xception"]
-    output_folder_list = ["VGG16"]
+    # Settingsのロード
+    settings = Settings()
 
     # desktop.iniの削除
-    folder_clean(img_root)
+    folder_clean(settings.IMG_ROOT)
 
     # 分類数を調べる。
-    classes = len(os.listdir(img_root))
-    printWithDate(classes, " classes found")
+    classes = len(os.listdir(settings.IMG_ROOT))
+    printWithDate(f'{classes} classes found')
 
     # ここで、データ拡張の方法を指定。
-    folder_list = os.listdir(img_root)
+    folder_list = os.listdir(settings.IMG_ROOT)
     train_num_mode_dic = {}
-    # 1881 1907 2552 1493 232
 
+    # gradeごとにデータ拡張の方法を変える場合はここを変更
     for i, folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [1, 1]
-        if i == 2 or i == 3 or i == 4:
-            train_num_mode_dic[folder] = [9, 1]
-
-    # sizeの指定
-    size = [224, 224]
+        train_num_mode_dic[folder] = [settings.NUM_OF_AUGS, settings.USE_FLIP]
 
     # 分割
     printWithDate("spliting dataset")
-    split = Split(k, img_root, dataset_folder)
+    split = Split(settings.K, settings.IMG_ROOT, settings.DATASET_FOLDER)
     split.k_fold_split_unique()
 
     # 分割ごとに
-    for idx in range(k):
-        printWithDate("processing sprited dataset ", idx + 1, "/", k)
+    for idx in range(settings.K):
+        printWithDate(f'processing sprited dataset {idx + 1}/{settings.K}')
 
         # 評価用データについて
-        printWithDate("making data for validation [", idx + 1, "/", k, "]")
-        validation = Validation(size, img_root, test_root,
-                                dataset_folder, classes, pic_mode, idx)
+        printWithDate(f'making data for validation [{idx + 1}/{settings.K}]')
+        validation = Validation(settings.IMG_SIZE, settings.IMG_ROOT, settings.TEST_ROOT,
+                                settings.DATASET_FOLDER, classes, settings.PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
-        printWithDate("making data for training [", idx + 1, "/", k, "]")
-        training = Training(img_root, dataset_folder, train_root, idx, pic_mode,
-                            train_num_mode_dic, size, classes, rotation_range,
-                            width_shift_range, height_shift_range, shear_range,
-                            zoom_range, batch_size)
+        printWithDate(f'making data for training [{idx + 1}/{settings.K}]')
+        training = Training(settings.IMG_ROOT, settings.DATASET_FOLDER, settings.TRAIN_ROOT,
+                            idx, settings.PIC_MODE, train_num_mode_dic, settings.IMG_SIZE,
+                            classes, settings.ROTATION_RANGE, settings.WIDTH_SHIFT_RANGE,
+                            settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
+                            settings.ZOOM_RANGE, settings.BATCH_SIZE)
         training.pic_df_training()
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
-        for out_i, output_folder in enumerate(output_folder_list):
+        for output_folder in settings.OUTPUT_FOLDER_LIST:
             folder_create(output_folder)
             history_folder = os.path.join(output_folder, "history")
             model_folder = os.path.join(output_folder, "model")
@@ -146,100 +117,97 @@ def main():
             summary_file = os.path.join(output_folder, "summary.csv")
             cross_file = os.path.join(output_folder, "cross.csv")
             miss_file = os.path.join(output_folder, "miss_summary.csv")
-            # "VGG19","DenseNet121","DenseNet169","DenseNet201",
+            # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models(size, classes, pic_mode)
-            """
-            if out_i == 0:
+            model_ch = Models(settings.IMG_SIZE, classes, settings.PIC_MODE)
+
+            if output_folder == 'VGG16':
                 model = model_ch.vgg16()
-            elif out_i == 1:
+            elif output_folder == 'VGG19':
                 model = model_ch.vgg19()
-            elif out_i == 2:
+            elif output_folder == 'DenseNet121':
                 model = model_ch.dense121()
-            elif out_i == 3:
+            elif output_folder == 'DenseNet169':
                 model = model_ch.dense169()
-            elif out_i == 4:
+            elif output_folder == 'DenseNet201':
                 model = model_ch.dense201()
-            elif out_i == 5:
+            elif output_folder == 'InceptionResNetV2':
                 model = model_ch.inception_resnet2()
-            elif out_i == 6:
+            elif output_folder == 'InceptionV3':
                 model = model_ch.inception3()
-            elif out_i == 7:
+            elif output_folder == 'ResNet50':
                 model = model_ch.resnet50()
-            elif out_i == 8:
+            elif output_folder == 'Xception':
                 model = model_ch.xception()
-            """
-            if out_i == 0:
-                model = model_ch.vgg16()
 
             # optimizerはSGD
-            if(pic_mode != 2):
+            if(settings.PIC_MODE != 2):
                 optimizer = SGD(lr=0.0001, decay=1e-6, momentum=0.9,
                                 nesterov=True)  # Adam(lr = 0.0005)
             else:
                 optimizer = Adam(lr=0.0001)
 
             # lossは画像解析のモードによる。
-            if pic_mode == 0:
+            if settings.PIC_MODE == 0:
                 loss = "binary_crossentropy"
-            elif pic_mode == 1:
+            elif settings.PIC_MODE == 1:
                 loss = "categorical_crossentropy"
-            elif pic_mode == 2:
+            elif settings.PIC_MODE == 2:
                 loss = "mean_squared_error"
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
-            epochs = 20
-            learning = Learning(img_root, dataset_folder, train_root, idx, pic_mode,
-                                train_num_mode_dic, size, classes, rotation_range,
-                                width_shift_range, height_shift_range, shear_range,
-                                zoom_range, batch_size, model_folder, model, X_val, y_val, epochs)
+            learning = Learning(settings.IMG_ROOT, settings.DATASET_FOLDER, settings.TRAIN_ROOT,
+                                idx, settings.PIC_MODE, train_num_mode_dic, settings.IMG_SIZE,
+                                classes, settings.ROTATION_RANGE, settings.WIDTH_SHIFT_RANGE,
+                                settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
+                                settings.ZOOM_RANGE, settings.BATCH_SIZE,
+                                model_folder, model, X_val, y_val, settings.EPOCHS)
 
             # 訓練実行
             history = learning.learning_model()
-            printWithDate("Learning finished [", idx + 1, "/", k, "]")
+            printWithDate(f'Learning finished [{idx + 1}/{settings.K}]')
 
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
-            if pic_mode == 0:
-                analysis = AnalysisBinary(train_root, test_root, miss_folder,
-                                          model_folder, roc_folder, result_file,
+            if settings.PIC_MODE == 0:
+                analysis = AnalysisBinary(settings.TRAIN_ROOT, settings.TEST_ROOT,
+                                          miss_folder, model_folder, roc_folder, result_file,
                                           model, X_val, y_val, W_val, idx)
-            elif pic_mode == 1:
-                analysis = AnalysisMulti(train_root, test_root, miss_folder,
-                                         model_folder, result_file,
+            elif settings.PIC_MODE == 1:
+                analysis = AnalysisMulti(settings.TRAIN_ROOT, settings.TEST_ROOT,
+                                         miss_folder, model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
-            elif pic_mode == 2:
-                analysis = AnalysisMulti(train_root, test_root, miss_folder,
-                                         model_folder, result_file,
+            elif settings.PIC_MODE == 2:
+                analysis = AnalysisMulti(settings.TRAIN_ROOT, settings.TEST_ROOT,
+                                         miss_folder, model_folder, result_file,
                                          model, X_val, y_val, W_val, idx)
             analysis.result_csv()
-            printWithDate("Analysis finished [", idx + 1, "/", k, "]")
+            printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
             model_delete(model, model_folder, idx)
             clear_session()
             tensorflow_backend.clear_session()
 
         # 訓練用フォルダおよびテスト用フォルダを削除する。
-        folder_delete(train_root)
-        folder_delete(test_root)
+        folder_delete(settings.TRAIN_ROOT)
+        folder_delete(settings.TEST_ROOT)
 
         # colabとdriveの同期待ちをする
-        WAITSEC = 120  # 待ち秒数
-        for i in trange(WAITSEC, desc='Waiting for syncing with GDrive'):
+        for i in trange(settings.WAITSEC, desc='Waiting for syncing with GDrive'):
             sleep(1)
 
     printWithDate("output Summary Analysis")
-    for output_folder in output_folder_list:
+    for output_folder in settings.OUTPUT_FOLDER_LIST:
         miss_folder = os.path.join(output_folder, "miss")
         result_file = os.path.join(output_folder, "result.csv")
         summary_file = os.path.join(output_folder, "summary.csv")
         cross_file = os.path.join(output_folder, "cross.csv")
         miss_file = os.path.join(output_folder, "miss_summary.csv")
 
-        if pic_mode == 0:
-            summary_analysis(result_file, summary_file, img_root, alpha)
-        cross_making(miss_folder, k, cross_file)
-        miss_summarize(miss_folder, k, miss_file)
+        if settings.PIC_MODE == 0:
+            summary_analysis(result_file, summary_file, settings.IMG_ROOT, settings.ALPHA)
+        cross_making(miss_folder, settings.K, cross_file)
+        miss_summarize(miss_folder, settings.K, miss_file)
 
     printWithDate("main() function is end")
     return
