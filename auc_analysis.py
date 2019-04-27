@@ -8,8 +8,10 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from math import sqrt
 from scipy import stats
 from utils import folder_create, clopper_pearson, num_count
+from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve, auc
 
 
@@ -316,77 +318,6 @@ class AnalysisBinary(object):
         return
 
 
-def summary_analysis(result_file, summary_file, img_root, alpha):
-    '''
-    AnalysisBinaryで作成されたcsvファイルを分析
-    '''
-
-    df = pd.read_csv(result_file, encoding="utf-8")
-    folder_list = os.listdir(img_root)
-    normal_col = "test" + "(" + folder_list[0] + ")"
-    des_col = "test" + "(" + folder_list[1] + ")"
-    n_normal = sum(df[normal_col])
-    n_des = sum(df[des_col])
-
-    # AUCについて
-    AUC_list = np.array(df["AUC"])
-    AUC_mean = np.mean(AUC_list)
-    AUC_sem = stats.sem(AUC_list)
-    AUC_low, AUC_up = stats.t.interval(
-        0.95, len(AUC_list) - 1, loc=AUC_mean, scale=AUC_sem)
-    AUC = [AUC_mean, AUC_low, AUC_up]
-    print("AUC")
-    print(AUC)
-
-    # 感度1について
-    sensitivity1_list = np.array(df["sensitivity(bestpoint)"])
-    sensitivity1_mean = np.mean(sensitivity1_list)
-    k_des1 = int(n_des * sensitivity1_mean)
-    sensitivity1_low, sensitivity1_up = clopper_pearson(k_des1, n_des, alpha)
-    sensitivity1 = [sensitivity1_mean, sensitivity1_low, sensitivity1_up]
-    print("感度1")
-    print(sensitivity1)
-
-    # 特異度1について
-    specificity1_list = np.array(df["specificity(bestpoint)"])
-    specificity1_mean = np.mean(specificity1_list)
-    k_normal1 = int(n_normal * specificity1_mean)
-    specificity1_low, specificity1_up = clopper_pearson(
-        k_normal1, n_normal, alpha)
-    specificity1 = [specificity1_mean, specificity1_low, specificity1_up]
-    print("特異度1")
-    print(specificity1)
-
-    # 感度2について
-    sensitivity2_list = np.array(df["sensitivity(baseline)"])
-    sensitivity2_mean = np.mean(sensitivity2_list)
-    k_des2 = int(n_des * sensitivity2_mean)
-    sensitivity2_low, sensitivity2_up = clopper_pearson(k_des2, n_des, alpha)
-    sensitivity2 = [sensitivity2_mean, sensitivity2_low, sensitivity2_up]
-    print("感度2")
-    print(sensitivity2)
-
-    # 特異度2について
-    specificity2_list = np.array(df["specificity(baseline)"])
-    specificity2_mean = np.mean(specificity2_list)
-    k_normal2 = int(n_normal * specificity2_mean)
-    specificity2_low, specificity2_up = clopper_pearson(
-        k_normal2, n_normal, alpha)
-    specificity2 = [specificity2_mean, specificity2_low, specificity2_up]
-    print("特異度2")
-    print(specificity2)
-
-    df2 = pd.DataFrame()
-    df2["AUC"] = AUC
-    df2["sensitivity(bestpoint)"] = sensitivity1
-    df2["specificity(bestpoint)"] = specificity1
-    df2["sensitivity(baseline)"] = sensitivity2
-    df2["specificity(baseline)"] = specificity2
-
-    df2.to_csv(summary_file, index=False, encoding="utf-8")
-    return
-
-
 # ここまで2値分類
 # これ以降は多クラス分類
 class AnalysisMulti(object):
@@ -490,4 +421,86 @@ def miss_summarize(miss_folder, k, miss_file):
         df = pd.read_csv(csv_fpath, encoding="utf-8")
         df2 = df2.append(df)
     df2.to_csv(miss_file, encoding="utf-8", index=False)
+    return
+
+
+def roc_auc_ci(y_true, y_score, alpha, positive=1):
+    AUC = roc_auc_score(y_true, y_score)
+    # 有病グループの数がN1, 正常群の数がN2
+    N1 = sum(y_true == positive)
+    N2 = sum(y_true != positive)
+    # Q1は
+    Q1 = AUC / (2 - AUC)
+    Q2 = 2*AUC**2 / (1 + AUC)
+    SE_AUC = sqrt((AUC*(1 - AUC) + (N1 - 1)*(Q1 - AUC**2) + (N2 - 1)*(Q2 - AUC**2)) / (N1*N2))
+    a,b = stats.norm.interval(alpha, loc=0, scale=1)
+    lower = AUC + a*SE_AUC
+    upper = AUC + b*SE_AUC
+    if lower < 0:
+        lower = 0
+    if upper > 1:
+        upper = 1
+    return [AUC,lower, upper]
+
+
+
+def summary_analysis(miss_summary_file, summary_file, roc_fig, img_folder,alpha):
+    '''
+    AnalysisBinaryで作成されたcsvファイルを分析
+    '''
+
+    df = pd.read_csv(miss_summary_file, encoding="utf-8")
+    df0 = df[df["true"] == 0]
+    df1 = df[df["true"] == 1]
+    n_normal = len(df0)
+    n_des = len(df1)
+    y_pred = np.array(df[os.listdir(img_folder)[1]])
+    y_true = np.array(df["true"])
+
+    # AUCについて
+    # y_pred, y_trueを用いて95%信頼区間を求める
+    AUCs = roc_auc_ci(y_true, y_pred, alpha, positive = 1)
+    print("AUC")
+    print(AUCs)
+
+    # 感度1について
+    k_des = len(df1[df1["predict"] == 1])
+    sensitivity = float(k_des/n_des)
+    sensitivity_low, sensitivity_up = clopper_pearson(k_des, n_des, alpha)
+    sensitivities = [sensitivity, sensitivity_low, sensitivity_up]
+    print("感度")
+    print(sensitivities)
+
+    # 特異度1について
+    k_normal = len(df0[df0["predict"] == 0])
+    specificity = float(k_normal/n_normal)
+    specificity_low, specificity_up = clopper_pearson(
+        k_normal, n_normal, alpha)
+    specificities = [specificity, specificity_low, specificity_up]
+    print("特異度")
+    print(specificities)
+
+
+    df_out = pd.DataFrame()
+    df_out["AUC"] = AUCs
+    df_out["sensitivity"] = sensitivities
+    df_out["specificity"] = specificities
+
+    df_out.to_csv(summary_file, index=False, encoding="utf-8")
+
+    fpr, tpr, thresholds = roc_curve(y_true, y_pred)
+    roc_auc = auc(fpr, tpr)
+    plt.figure()
+    plt.plot(fpr, tpr, linewidth=3,
+             label='ROC curve (area = %0.3f)' % roc_auc)
+    plt.scatter(np.array(1-specificity), np.array(sensitivity), s = 50, c = "green")
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.0])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC curve')
+    plt.legend(loc="lower right")
+    plt.savefig(roc_fig)
+
     return

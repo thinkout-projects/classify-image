@@ -204,10 +204,10 @@ def main():
         cross_file = os.path.join(output_folder, "cross.csv")
         miss_file = os.path.join(output_folder, "miss_summary.csv")
 
-        if settings.PIC_MODE == 0:
-            summary_analysis(result_file, summary_file, settings.IMG_ROOT, settings.ALPHA)
         cross_making(miss_folder, settings.K, cross_file)
         miss_summarize(miss_folder, settings.K, miss_file)
+        if settings.PIC_MODE == 0:
+            summary_analysis(miss_file, summary_file, settings.ROC_FIG, settings.IMG_ROOT, settings.ALPHA)
 
     printWithDate("main() function is end")
     return
