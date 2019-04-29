@@ -84,9 +84,11 @@ class Split:
                 df_test = pd.concat([df_test, pd.DataFrame(
                     ds_test, columns=[folder_name])], axis=1)
 
-            df_train.to_csv(self.dataset_folder + "/" + "train" + "_" + str(idx) + ".csv",
+            df_train.to_csv(self.dataset_folder + "/"
+                            + "train" + "_" + str(idx) + ".csv",
                             index=False, encoding="utf-8")
-            df_test.to_csv(self.dataset_folder + "/" + "test" + "_" + str(idx) + ".csv",
+            df_test.to_csv(self.dataset_folder + "/"
+                           + "test" + "_" + str(idx) + ".csv",
                            index=False, encoding="utf-8")
         return
 
@@ -115,7 +117,7 @@ class Split:
         y_unique = []
         printWithDate("spliting - loop 2/4")
         for (i, j) in zip(X, y):
-            if((i[:-6] in X_unique) == False):
+            if((i[:-6] in X_unique) is False):
                 X_unique.append(i[:-6])
                 y_unique.append(j)
 
@@ -128,7 +130,8 @@ class Split:
         test_list = []
         # 患者IDのみでデータ分割
         printWithDate("spliting - loop 3/4")
-        for (i, (train_index, test_index)) in enumerate(skf.split(X_unique, y_unique)):
+        for (i, (train_index, test_index)) in enumerate(skf.split(X_unique,
+                                                                  y_unique)):
             train_folder_list = [[] for i in range(nb_classes)]
             test_folder_list = [[] for i in range(nb_classes)]
             for index in train_index:
@@ -163,8 +166,10 @@ class Split:
                 df_test = pd.concat([df_test, pd.DataFrame(
                     ds_test, columns=[folder_name])], axis=1)
 
-            df_train.to_csv(self.dataset_folder + "/" + "train" + "_" + str(idx) + ".csv",
+            df_train.to_csv(self.dataset_folder + "/"
+                            + "train" + "_" + str(idx) + ".csv",
                             index=False, encoding="utf-8")
-            df_test.to_csv(self.dataset_folder + "/" + "test" + "_" + str(idx) + ".csv",
+            df_test.to_csv(self.dataset_folder + "/"
+                           + "test" + "_" + str(idx) + ".csv",
                            index=False, encoding="utf-8")
         return

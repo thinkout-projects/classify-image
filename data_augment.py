@@ -97,7 +97,8 @@ class Trans:
 
         self.func_list = [self.nothing_func, self.hc1_func, self.lc1_func,
                           self.gamma1_func, self.gamma2_func, self.blur_func,
-                          self.equalizeHistRGB_func, self.addGaussianNoise_func,
+                          self.equalizeHistRGB_func,
+                          self.addGaussianNoise_func,
                           self.addSaltPepperNoise_func, self.lr_flip_func]
 
     # ① 何もしない

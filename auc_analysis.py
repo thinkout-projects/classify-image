@@ -38,7 +38,8 @@ class Analysis_Basic(object):
 
 
 class Miss(object):
-    def __init__(self, idx, y_pred, y_val, W_val, model, model_folder, test_folder, miss_folder):
+    def __init__(self, idx, y_pred, y_val, W_val, model,
+                 model_folder, test_folder, miss_folder):
         self.idx = idx
         self.y_pred = y_pred
         self.y_val = y_val
@@ -88,8 +89,10 @@ class Miss(object):
         # クラス分の[]を用意する。
         file_name_list = []
         for num in range(len(pre_list)):
-            # y_val[num]は当該ファイルの正答のベクトル、argmaxで正答番号がわかる
-            # W_val[num]は当該ファイルのパス、\\で分割し-1にすることで一番最後のファイル名が分かる
+            # y_val[num]は当該ファイルの正答のベクトル、
+            #   argmaxで正答番号がわかる
+            # W_val[num]は当該ファイルのパス、
+            #   \\で分割し-1にすることで一番最後のファイル名が分かる
             file_name_list.append(self.W_val[num].split("\\")[-1])
 
         df = pd.DataFrame()
@@ -212,11 +215,12 @@ class AnalysisBinary(object):
     # class Analysis_Basic():
     # def __init__(self, train_root,model,X_val,y_val):
     # class Miss():
-    # def __init__(self,idx,y_pred,y_val,W_val,model,model_folder,test_folder,miss_folder):
+    # def __init__(self,idx,y_pred,y_val,W_val,model,
+    #              model_folder,test_folder,miss_folder):
     # class AUC():
     # def __init__foler(self,idx,y_pred,y_val,model,roc_folder):
-    def __init__(self, train_root, test_root, miss_folder, model_folder, roc_folder, result_file,
-                 model, X_val, y_val, W_val, idx):
+    def __init__(self, train_root, test_root, miss_folder, model_folder,
+                 roc_folder, result_file, model, X_val, y_val, W_val, idx):
 
         self.train_root = train_root
         self.test_root = test_root
@@ -229,8 +233,8 @@ class AnalysisBinary(object):
         self.y_pred = self.basic.predict()
 
         # Missクラス、AUCクラスコンストラクタ
-        self.miss_class = Miss(
-            idx, self.y_pred, y_val, W_val, model, model_folder, test_root, miss_folder)
+        self.miss_class = Miss(idx, self.y_pred, y_val, W_val, model,
+                               model_folder, test_root, miss_folder)
         self.auc_class = AUC(idx, self.y_pred, y_val, model, roc_folder)
         self.idx = idx
 
@@ -280,8 +284,10 @@ class AnalysisBinary(object):
         columns_list.extend(train_column_list)
         columns_list.extend(test_column_list)
         columns_list.extend(["loss", "accuracy", "miss", "AUC",
-                             "sensitivity(bestpoint)", "specificity(bestpoint)", "threshold(bestpoint)",
-                             "sensitivity(baseline)", "specificity(baseline)", "threshold(baseline)", ])
+                             "sensitivity(bestpoint)",
+                             "specificity(bestpoint)", "threshold(bestpoint)",
+                             "sensitivity(baseline)", "specificity(baseline)",
+                             "threshold(baseline)", ])
         df = pd.DataFrame(columns=[columns_list])
         df.to_csv(self.result_file, encoding="utf-8", index=False)
         return
@@ -289,7 +295,8 @@ class AnalysisBinary(object):
     def result_csv_making(self):
         train_dic, test_dic, loss_model, accuracy_model, miss, roc_auc,\
             sensitivity1, specificity1, threshold1,\
-            sensitivity2, specificity2, threshold2 = AnalysisBinary.analysis(self)
+            sensitivity2, specificity2, threshold2 = AnalysisBinary.analysis(
+                self)
         df = pd.read_csv(self.result_file)
         df2 = pd.DataFrame()
         for column in train_dic.keys():
@@ -321,8 +328,8 @@ class AnalysisBinary(object):
 # ここまで2値分類
 # これ以降は多クラス分類
 class AnalysisMulti(object):
-    def __init__(self, train_root, test_root, miss_folder, model_folder, result_file,
-                 model, X_val, y_val, W_val, idx):
+    def __init__(self, train_root, test_root, miss_folder, model_folder,
+                 result_file, model, X_val, y_val, W_val, idx):
         self.train_root = train_root
         self.test_root = test_root
         self.result_file = result_file
@@ -334,8 +341,8 @@ class AnalysisMulti(object):
         self.y_pred = self.basic.predict()
 
         # Missクラス、AUCクラスコンストラクタ
-        self.miss_class = Miss(
-            idx, self.y_pred, y_val, W_val, model, model_folder, test_root, miss_folder)
+        self.miss_class = Miss(idx, self.y_pred, y_val, W_val, model,
+                               model_folder, test_root, miss_folder)
         self.idx = idx
 
     def analysis(self):
@@ -369,8 +376,8 @@ class AnalysisMulti(object):
         return
 
     def result_csv_making(self):
-        train_dic, test_dic, loss_model, accuracy_model, miss = AnalysisMulti.analysis(
-            self)
+        train_dic, test_dic, loss_model, accuracy_model, miss = \
+            AnalysisMulti.analysis(self)
         df = pd.read_csv(self.result_file)
         df2 = pd.DataFrame()
         for column in train_dic.keys():
@@ -432,19 +439,20 @@ def roc_auc_ci(y_true, y_score, alpha, positive=1):
     # Q1は
     Q1 = AUC / (2 - AUC)
     Q2 = 2*AUC**2 / (1 + AUC)
-    SE_AUC = sqrt((AUC*(1 - AUC) + (N1 - 1)*(Q1 - AUC**2) + (N2 - 1)*(Q2 - AUC**2)) / (N1*N2))
-    a,b = stats.norm.interval(alpha, loc=0, scale=1)
+    SE_AUC = sqrt((AUC*(1 - AUC) + (N1 - 1)*(Q1 - AUC**2) +
+                   (N2 - 1)*(Q2 - AUC**2)) / (N1*N2))
+    a, b = stats.norm.interval(alpha, loc=0, scale=1)
     lower = AUC + a*SE_AUC
     upper = AUC + b*SE_AUC
     if lower < 0:
         lower = 0
     if upper > 1:
         upper = 1
-    return [AUC,lower, upper]
+    return [AUC, lower, upper]
 
 
-
-def summary_analysis(miss_summary_file, summary_file, roc_fig, img_folder,alpha):
+def summary_analysis(miss_summary_file, summary_file, roc_fig, img_folder,
+                     alpha):
     '''
     AnalysisBinaryで作成されたcsvファイルを分析
     '''
@@ -459,7 +467,7 @@ def summary_analysis(miss_summary_file, summary_file, roc_fig, img_folder,alpha)
 
     # AUCについて
     # y_pred, y_trueを用いて95%信頼区間を求める
-    AUCs = roc_auc_ci(y_true, y_pred, alpha, positive = 1)
+    AUCs = roc_auc_ci(y_true, y_pred, alpha, positive=1)
     print("AUC")
     print(AUCs)
 
@@ -480,7 +488,6 @@ def summary_analysis(miss_summary_file, summary_file, roc_fig, img_folder,alpha)
     print("特異度")
     print(specificities)
 
-
     df_out = pd.DataFrame()
     df_out["AUC"] = AUCs
     df_out["sensitivity"] = sensitivities
@@ -493,7 +500,8 @@ def summary_analysis(miss_summary_file, summary_file, roc_fig, img_folder,alpha)
     plt.figure()
     plt.plot(fpr, tpr, linewidth=3,
              label='ROC curve (area = %0.3f)' % roc_auc)
-    plt.scatter(np.array(1-specificity), np.array(sensitivity), s = 50, c = "green")
+    plt.scatter(np.array(1-specificity),
+                np.array(sensitivity), s=50, c="green")
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.0])

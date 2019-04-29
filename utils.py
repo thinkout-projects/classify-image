@@ -22,7 +22,8 @@ def printWithDate(*printee):
     通常のprint文に加え、[ yyyy/mm/dd hh:mm:ss ] を文頭に挿入する。
     ただし、`sep`, `end`, `file`, `flush`は使用不可能。
     '''
-    print("[", datetime.now().astimezone(timezone('Asia/Tokyo')).strftime("%Y/%m/%d %H:%M:%S"), "] ", end="")
+    print("[", datetime.now().astimezone(timezone('Asia/Tokyo'))
+          .strftime("%Y/%m/%d %H:%M:%S"), "] ", end="")
     for i in printee:
         print(i, end="")
     print()
@@ -41,7 +42,8 @@ def folder_delete(folder):
 
 
 def ID_reading(dataset_folder, idx):
-    df = pd.read_csv(os.path.join(dataset_folder, "dataset" + "_" + str(idx) + "." + "csv"),
+    df = pd.read_csv(os.path.join(dataset_folder, "dataset" + "_"
+                                  + str(idx) + "." + "csv"),
                      encoding="utf-8")
     # ファイル名一覧
     train_list = df["train"].dropna()
@@ -76,7 +78,8 @@ def folder_clean(img_root):
 
 def split_array(ar, n_group):
     for i_chunk in range(n_group):
-        yield ar[i_chunk * len(ar) // n_group:(i_chunk + 1) * len(ar) // n_group]
+        yield ar[i_chunk * len(ar) // n_group:(i_chunk + 1)
+                 * len(ar) // n_group]
 
 
 def list_shuffle(a, b, seed):
