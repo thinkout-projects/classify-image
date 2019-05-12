@@ -7,7 +7,6 @@ from utils import folder_create
 # VGG16のネットワーク系
 from keras.models import Sequential, Model
 from keras.layers import Input, Dense, Dropout, Activation, Flatten
-from keras.layers.normalization import BatchNormalization
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 
 # VGG 16
@@ -230,66 +229,6 @@ class Models(object):
         model = Model(input=vgg16_model.input,
                       output=top_model(vgg16_model.output))
         return model
-
-    def vgg_model(self):
-        '''
-        VGG16の構造に適宜batch normalizationをさしはさんだもの
-        '''
-
-        model = Sequential()
-        model.add(Conv2D(64, (3, 3), padding='valid',
-                         input_shape=(self.h, self.w, self.ch)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(64, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization())
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Dropout(0.30))
-
-        model.add(Conv2D(128, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(128, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization())
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Dropout(0.30))
-
-        model.add(Conv2D(256, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(256, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(256, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization())
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Dropout(0.30))
-
-        model.add(Conv2D(512, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(512, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(512, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization())
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Dropout(0.30))
-
-        model.add(Flatten())
-        model.add(Dense(512))
-        model.add(Activation('relu'))
-        model.add(Dropout(0.70))
-        model.add(Dense(512))
-        model.add(Activation('relu'))
-        # model.add(BatchNormalization())
-        model.add(Dropout(0.70))
-        model.add(Dense(self.classes))
-
-        # 【要修正】top_modelがvgg_model内で未定義のためコメントアウト
-        # if(self.pic_mode != 2):
-        #     top_model.add(Dense(self.classes, activation='softmax'))
-        # else:
-        #     top_model.add(Dense(self.classes, activation='relu'))
-        # return model
 
     def test_model(self):
         '''
