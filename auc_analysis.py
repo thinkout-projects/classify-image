@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from math import sqrt
 from scipy import stats
-from utils import folder_create, clopper_pearson, num_count
+from utils import folder_create, clopper_pearson
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve, auc
 
@@ -79,6 +79,7 @@ class Miss_classify(object):
         df.to_csv(miss_fpath, index=False, encoding="utf-8")
         return
 
+
 class Miss_regression(object):
     def __init__(self, idx, y_pred, y_val, W_val, miss_folder):
         self.idx = idx
@@ -112,7 +113,6 @@ class Miss_regression(object):
         return
 
 
-
 def cross_making(miss_folder, k, cross_file):
     true_list = []
     predict_list = []
@@ -143,7 +143,9 @@ def miss_summarize(miss_folder, miss_file):
     df2.to_csv(miss_file, encoding="utf-8", index=False)
     return
 
-def summary_analysis_binary(miss_summary_file, summary_file, roc_fig, img_folder,alpha):
+
+def summary_analysis_binary(miss_summary_file, summary_file, roc_fig,
+                            img_folder, alpha):
     df = pd.read_csv(miss_summary_file, encoding="utf-8")
     df0 = df[df["true"] == 0]
     df1 = df[df["true"] == 1]
@@ -154,7 +156,7 @@ def summary_analysis_binary(miss_summary_file, summary_file, roc_fig, img_folder
 
     # AUCについて
     # y_pred, y_trueを用いて95%信頼区間を求める
-    AUCs = roc_auc_ci(y_true, y_pred, alpha, positive = 1)
+    AUCs = roc_auc_ci(y_true, y_pred, alpha, positive=1)
     print("AUC")
     print(AUCs)
 
@@ -175,7 +177,6 @@ def summary_analysis_binary(miss_summary_file, summary_file, roc_fig, img_folder
     print("特異度")
     print(specificities)
 
-
     df_out = pd.DataFrame()
     df_out["AUC"] = AUCs
     df_out["sensitivity"] = sensitivities
@@ -188,7 +189,8 @@ def summary_analysis_binary(miss_summary_file, summary_file, roc_fig, img_folder
     plt.figure()
     plt.plot(fpr, tpr, linewidth=3,
              label='ROC curve (area = %0.3f)' % roc_auc)
-    plt.scatter(np.array(1-specificity), np.array(sensitivity), s = 50, c = "green")
+    plt.scatter(np.array(1-specificity),
+                np.array(sensitivity), s=50, c="green")
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.0])
@@ -200,7 +202,6 @@ def summary_analysis_binary(miss_summary_file, summary_file, roc_fig, img_folder
     return
 
 
-
 def roc_auc_ci(y_true, y_score, alpha, positive=1):
     AUC = roc_auc_score(y_true, y_score)
     # 有病グループの数がN1, 正常群の数がN2
@@ -209,22 +210,24 @@ def roc_auc_ci(y_true, y_score, alpha, positive=1):
     # Q1は
     Q1 = AUC / (2 - AUC)
     Q2 = 2*AUC**2 / (1 + AUC)
-    SE_AUC = sqrt((AUC*(1 - AUC) + (N1 - 1)*(Q1 - AUC**2) + (N2 - 1)*(Q2 - AUC**2)) / (N1*N2))
-    a,b = stats.norm.interval(alpha, loc=0, scale=1)
+    SE_AUC = sqrt((AUC*(1 - AUC) + (N1 - 1)*(Q1 - AUC**2) +
+                   (N2 - 1)*(Q2 - AUC**2)) / (N1*N2))
+    a, b = stats.norm.interval(alpha, loc=0, scale=1)
     lower = AUC + a*SE_AUC
     upper = AUC + b*SE_AUC
     if lower < 0:
         lower = 0
     if upper > 1:
         upper = 1
-    return [AUC,lower, upper]
+    return [AUC, lower, upper]
 
 
-def summary_analysis_categorical(miss_summary_file, summary_file, img_folder,alpha):
+def summary_analysis_categorical(miss_summary_file, summary_file, img_folder,
+                                 alpha):
     df = pd.read_csv(miss_summary_file, encoding="utf-8")
     cols = os.listdir(img_folder)
     df_out = pd.DataFrame()
-    for i,col in enumerate(cols):
+    for i, col in enumerate(cols):
         df0 = df[df["true"] == i]
         n_0 = len(df0)
         df00 = df0[df0["predict"] == i]
@@ -247,7 +250,7 @@ def summary_analysis_regression(miss_summary_file, summary_file, fig_file):
     print("相関係数")
     print(r, p)
     df_out = pd.DataFrame()
-    df_out["pearsonr"] = r,p
+    df_out["pearsonr"] = r, p
     df_out.to_csv(summary_file, index=False, encoding="utf-8")
 
     plt.figure()
