@@ -21,7 +21,8 @@ class Validation(object):
     評価用データの作成および読み込みのクラス
     '''
 
-    def __init__(self, size, source_folder, test_root, dataset_folder, classes, pic_mode, idx):
+    def __init__(self, size, source_folder, test_root, dataset_folder,
+                 classes, pic_mode, idx):
         self.source_folder = source_folder
         self.test_root = test_root
         self.dataset_folder = dataset_folder
@@ -39,7 +40,8 @@ class Validation(object):
         '''
 
         df_test = pd.read_csv(os.path.join(
-            self.dataset_folder, "test" + "_" + str(self.idx) + "." + "csv"), encoding="utf-8")
+            self.dataset_folder, "test" + "_" + str(self.idx) + "." + "csv"),
+            encoding="utf-8")
         columns = df_test.columns
 
         # test作成
@@ -50,10 +52,12 @@ class Validation(object):
             folder_create(test_folder)
             test_list = df_test[column].dropna()
 
-            with tqdm(total=len(test_list), desc='for ' + column, leave=True) as pbar:
+            with tqdm(total=len(test_list),
+                      desc='for ' + column, leave=True) as pbar:
                 for test_file in test_list:
                     # img/ 00_normal/ filename
-                    img_path = os.path.join(self.source_folder, column, test_file)
+                    img_path = os.path.join(
+                        self.source_folder, column, test_file)
                     # test/00_normal/filename
                     new_path = os.path.join(test_folder, test_file)
                     shutil.copy(img_path, new_path)
