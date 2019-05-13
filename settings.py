@@ -43,13 +43,14 @@ class Settings:
     DATASET_FOLDER = "dataset"  # 分割したデータのファイル名が記載されたcsvファイルのフォルダ
     TRAIN_ROOT = "train"  # 訓練用画像が出力されるフォルダ (解析終了後は削除される)
     TEST_ROOT = "test"  # 評価用画像が出力されるフォルダ (解析終了後は削除される)
-    ROC_FIG = "ROC.png"
 
     # 解析に使うモデルのネットワーク構造の指定
     # 例えば、VGG16とVGG19で解析するならば、["VGG16", "VGG19"]みたいにしてください。
     # 以下は現時点で実装されているネットワーク構造を全て使った例
-    # OUTPUT_FOLDER_LIST = ["VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
-    #                       "InceptionResNetV2","InceptionV3","ResNet50","Xception"]
+    # OUTPUT_FOLDER_LIST = ["VGG16","VGG19",
+    #                       "DenseNet121","DenseNet169","DenseNet201",
+    #                       "InceptionResNetV2","InceptionV3",
+    #                       "ResNet50","Xception"]
     OUTPUT_FOLDER_LIST = ["VGG16"]
 
     # 画像サイズ(解像度)の指定

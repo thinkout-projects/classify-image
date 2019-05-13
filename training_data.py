@@ -52,9 +52,10 @@ def threadsafe_generator(f):
 
 
 class Training(object):
-    def __init__(self, source_folder, dataset_folder, train_root, idx, pic_mode,
-                 train_num_mode_dic, size, classes, rotation_range,
-                 width_shift_range, height_shift_range, shear_range, zoom_range, BATCH_SIZE):
+    def __init__(self, source_folder, dataset_folder, train_root, idx,
+                 pic_mode, train_num_mode_dic, size, classes, rotation_range,
+                 width_shift_range, height_shift_range, shear_range,
+                 zoom_range, BATCH_SIZE):
         self.source_folder = source_folder
         self.train_root = train_root
         self.idx = idx
@@ -77,7 +78,8 @@ class Training(object):
         Datasetから訓練用フォルダを作成
         '''
         df_train = pd.read_csv(os.path.join(
-            self.dataset_folder, "train" + "_" + str(self.idx) + "." + "csv"), encoding="utf-8")
+            self.dataset_folder, "train" + "_" + str(self.idx) + "." + "csv"),
+            encoding="utf-8")
         columns = df_train.columns
 
         # train作成
@@ -88,11 +90,13 @@ class Training(object):
             folder_create(train_folder)
             train_list = df_train[column].dropna()
 
-            with tqdm(total=len(train_list), desc='for ' + column, leave=True) as pbar:
+            with tqdm(total=len(train_list),
+                      desc='for ' + column, leave=True) as pbar:
                 # 画像ごとに
                 for train_file in train_list:
                     # img/00_normal/画像
-                    img_path = os.path.join(self.source_folder, column, train_file)
+                    img_path = os.path.join(self.source_folder, column,
+                                            train_file)
                     src0 = cv2.imread(img_path)
                     file_without = train_file.split(".")[0]
 
@@ -103,7 +107,8 @@ class Training(object):
                     num = num_mode[0]
                     mode = num_mode[1]
                     num_list = random.sample(range(9), num)
-                    data_augment(train_folder, file_without, src0, num_list, mode)
+                    data_augment(train_folder, file_without,
+                                 src0, num_list, mode)
                     pbar.update(1)
         return
 
@@ -148,7 +153,8 @@ class Training(object):
     @threadsafe_generator
     def datagen(self, fpath_list, tag_array):  # data generator
         while True:
-            for i in range(0, len(fpath_list) - self.BATCH_SIZE, self.BATCH_SIZE):
+            for i in range(0, len(fpath_list) - self.BATCH_SIZE,
+                           self.BATCH_SIZE):
                 x, t = Training.mini_batch(self, fpath_list, tag_array, i)
                 if(t[0].size == self.classes):  # 謎バグ回避用
                     yield x, t

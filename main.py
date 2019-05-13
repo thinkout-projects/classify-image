@@ -42,8 +42,11 @@ from learning import Learning, plot_hist
 
 # 評価、結果の分析
 from utils import model_load, model_delete
-from auc_analysis import AnalysisBinary, AnalysisMulti
-from auc_analysis import summary_analysis, cross_making, miss_summarize
+from auc_analysis import Miss_classify, Miss_regression
+from auc_analysis import cross_making, miss_summarize
+from auc_analysis import (summary_analysis_binary,
+                          summary_analysis_categorical,
+                          summary_analysis_regression)
 
 # 設定ファイルの読み込み
 from settings import Settings
@@ -91,16 +94,19 @@ def main():
 
         # 評価用データについて
         printWithDate(f'making data for validation [{idx + 1}/{settings.K}]')
-        validation = Validation(settings.IMG_SIZE, settings.IMG_ROOT, settings.TEST_ROOT,
-                                settings.DATASET_FOLDER, classes, settings.PIC_MODE, idx)
+        validation = Validation(settings.IMG_SIZE, settings.IMG_ROOT,
+                                settings.TEST_ROOT, settings.DATASET_FOLDER,
+                                classes, settings.PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
         printWithDate(f'making data for training [{idx + 1}/{settings.K}]')
-        training = Training(settings.IMG_ROOT, settings.DATASET_FOLDER, settings.TRAIN_ROOT,
-                            idx, settings.PIC_MODE, train_num_mode_dic, settings.IMG_SIZE,
-                            classes, settings.ROTATION_RANGE, settings.WIDTH_SHIFT_RANGE,
+        training = Training(settings.IMG_ROOT, settings.DATASET_FOLDER,
+                            settings.TRAIN_ROOT, idx, settings.PIC_MODE,
+                            train_num_mode_dic, settings.IMG_SIZE,
+                            classes, settings.ROTATION_RANGE,
+                            settings.WIDTH_SHIFT_RANGE,
                             settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
                             settings.ZOOM_RANGE, settings.BATCH_SIZE)
         training.pic_df_training()
@@ -112,8 +118,8 @@ def main():
             history_folder = os.path.join(output_folder, "history")
             model_folder = os.path.join(output_folder, "model")
             miss_folder = os.path.join(output_folder, "miss")
-            roc_folder = os.path.join(output_folder, "roc")
-            result_file = os.path.join(output_folder, "result.csv")
+            # roc_folder = os.path.join(output_folder, "roc")
+            # result_file = os.path.join(output_folder, "result.csv")
             summary_file = os.path.join(output_folder, "summary.csv")
             cross_file = os.path.join(output_folder, "cross.csv")
             miss_file = os.path.join(output_folder, "miss_summary.csv")
@@ -157,12 +163,15 @@ def main():
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
-            learning = Learning(settings.IMG_ROOT, settings.DATASET_FOLDER, settings.TRAIN_ROOT,
-                                idx, settings.PIC_MODE, train_num_mode_dic, settings.IMG_SIZE,
-                                classes, settings.ROTATION_RANGE, settings.WIDTH_SHIFT_RANGE,
-                                settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
-                                settings.ZOOM_RANGE, settings.BATCH_SIZE,
-                                model_folder, model, X_val, y_val, settings.EPOCHS)
+            learning = Learning(settings.IMG_ROOT, settings.DATASET_FOLDER,
+                                settings.TRAIN_ROOT, idx, settings.PIC_MODE,
+                                train_num_mode_dic, settings.IMG_SIZE, classes,
+                                settings.ROTATION_RANGE,
+                                settings.WIDTH_SHIFT_RANGE,
+                                settings.HEIGHT_SHIFT_RANGE,
+                                settings.SHEAR_RANGE, settings.ZOOM_RANGE,
+                                settings.BATCH_SIZE, model_folder, model,
+                                X_val, y_val, settings.EPOCHS)
 
             # 訓練実行
             history = learning.learning_model()
@@ -170,19 +179,13 @@ def main():
 
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
-            if settings.PIC_MODE == 0:
-                analysis = AnalysisBinary(settings.TRAIN_ROOT, settings.TEST_ROOT,
-                                          miss_folder, model_folder, roc_folder, result_file,
-                                          model, X_val, y_val, W_val, idx)
-            elif settings.PIC_MODE == 1:
-                analysis = AnalysisMulti(settings.TRAIN_ROOT, settings.TEST_ROOT,
-                                         miss_folder, model_folder, result_file,
-                                         model, X_val, y_val, W_val, idx)
-            elif settings.PIC_MODE == 2:
-                analysis = AnalysisMulti(settings.TRAIN_ROOT, settings.TEST_ROOT,
-                                         miss_folder, model_folder, result_file,
-                                         model, X_val, y_val, W_val, idx)
-            analysis.result_csv()
+            y_pred = model.predict(X_val)
+            if settings.PIC_MODE != 2:
+                Miss_classify(idx, y_pred, y_val, W_val, settings.TEST_ROOT,
+                              miss_folder).miss_csv_making()
+            else:
+                Miss_regression(idx, y_pred, y_val, W_val,
+                                miss_folder).miss_csv_making()
             printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
             model_delete(model, model_folder, idx)
             clear_session()
@@ -193,21 +196,30 @@ def main():
         folder_delete(settings.TEST_ROOT)
 
         # colabとdriveの同期待ちをする
-        for i in trange(settings.WAITSEC, desc='Waiting for syncing with GDrive'):
+        for i in trange(settings.WAITSEC,
+                        desc='Waiting for syncing with GDrive'):
             sleep(1)
 
     printWithDate("output Summary Analysis")
     for output_folder in settings.OUTPUT_FOLDER_LIST:
         miss_folder = os.path.join(output_folder, "miss")
-        result_file = os.path.join(output_folder, "result.csv")
         summary_file = os.path.join(output_folder, "summary.csv")
         cross_file = os.path.join(output_folder, "cross.csv")
         miss_file = os.path.join(output_folder, "miss_summary.csv")
-
-        cross_making(miss_folder, settings.K, cross_file)
-        miss_summarize(miss_folder, settings.K, miss_file)
+        fig_file = os.path.join(output_folder, "figure.png")
+        # miss_summary.csvを元に各種解析を行う
+        # Kは不要
+        miss_summarize(miss_folder, miss_file)
+        if settings.PIC_MODE != 2:
+            cross_making(miss_folder, settings.K, cross_file)
         if settings.PIC_MODE == 0:
-            summary_analysis(miss_file, summary_file, settings.ROC_FIG, settings.IMG_ROOT, settings.ALPHA)
+            summary_analysis_binary(miss_file, summary_file, fig_file,
+                                    settings.IMG_ROOT, settings.ALPHA)
+        elif settings.PIC_MODE == 1:
+            summary_analysis_categorical(miss_file, summary_file,
+                                         settings.IMG_ROOT, settings.ALPHA)
+        elif settings.PIC_MODE == 2:
+            summary_analysis_regression(miss_file, summary_file, fig_file)
 
     printWithDate("main() function is end")
     return

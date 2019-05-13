@@ -7,7 +7,6 @@ from utils import folder_create
 # VGG16のネットワーク系
 from keras.models import Sequential, Model
 from keras.layers import Input, Dense, Dropout, Activation, Flatten
-from keras.layers.normalization import BatchNormalization
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 
 # VGG 16
@@ -231,65 +230,6 @@ class Models(object):
                       output=top_model(vgg16_model.output))
         return model
 
-    def vgg_model(self):
-        '''
-        VGG16の構造に適宜batch normalizationをさしはさんだもの
-        '''
-
-        model = Sequential()
-        model.add(Conv2D(64, (3, 3), padding='valid',
-                         input_shape=(self.h, self.w, self.ch)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(64, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization())
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Dropout(0.30))
-
-        model.add(Conv2D(128, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(128, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization())
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Dropout(0.30))
-
-        model.add(Conv2D(256, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(256, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(256, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization())
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Dropout(0.30))
-
-        model.add(Conv2D(512, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(512, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(Conv2D(512, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization())
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Dropout(0.30))
-
-        model.add(Flatten())
-        model.add(Dense(512))
-        model.add(Activation('relu'))
-        model.add(Dropout(0.70))
-        model.add(Dense(512))
-        model.add(Activation('relu'))
-        # model.add(BatchNormalization())
-        model.add(Dropout(0.70))
-        model.add(Dense(self.classes))
-
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
-        else:
-            top_model.add(Dense(self.classes, activation='relu'))
-        return model
-
     def test_model(self):
         '''
         laptopでも使用できる3層ネットワーク
@@ -325,11 +265,15 @@ class Learning(Training):
     Trainingのクラスをスーパークラスとして、サブクラスである学習クラスを作成
     '''
 
-    def __init__(self, source_folder, dataset_folder, train_root, idx, pic_mode, train_num_mode_dic, size, classes,
-                 rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range, BATCH_SIZE,
-                 model_folder, model, X_val, y_val, epochs):
-        super().__init__(source_folder, dataset_folder, train_root, idx, pic_mode, train_num_mode_dic, size, classes,
-                         rotation_range, width_shift_range, height_shift_range, shear_range, zoom_range, BATCH_SIZE)
+    def __init__(self, source_folder, dataset_folder, train_root, idx,
+                 pic_mode, train_num_mode_dic, size, classes, rotation_range,
+                 width_shift_range, height_shift_range, shear_range,
+                 zoom_range, BATCH_SIZE, model_folder, model,
+                 X_val, y_val, epochs):
+        super().__init__(source_folder, dataset_folder, train_root, idx,
+                         pic_mode, train_num_mode_dic, size, classes,
+                         rotation_range, width_shift_range, height_shift_range,
+                         shear_range, zoom_range, BATCH_SIZE)
         self.model_folder = model_folder
         self.model = model
         self.pic_mode = pic_mode
@@ -363,10 +307,12 @@ class Learning(Training):
 
         # val_lossが最小になったときのみmodelを保存
         mc_cb = ModelCheckpoint(os.path.join(self.model_folder, model_file),
-                                monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+                                monitor='val_loss', verbose=1,
+                                save_best_only=True, mode='min')
 
         # 学習が停滞したとき、学習率を0.2倍に
-        rl_cb = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=5, verbose=1, mode='auto',
+        rl_cb = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=5,
+                                  verbose=1, mode='auto',
                                   epsilon=0.0001, cooldown=0, min_lr=0)
 
         # 学習が進まなくなったら、強制的に学習終了
@@ -378,15 +324,18 @@ class Learning(Training):
         # balance = Learning.balance_making(self)
 
         # 実際に学習⇒historyを作成
-        history = self.model.fit_generator(Learning.datagen(self, fpath_list=fpath_list,
-                                                            tag_array=tag_array),
-                                           int(len(fpath_list) / self.batch_size),
+        history = self.model.fit_generator(Learning.datagen(
+                                           self, fpath_list=fpath_list,
+                                           tag_array=tag_array),
+                                           int(len(fpath_list) /
+                                               self.batch_size),
                                            epochs=self.epochs,
                                            # class_weight = balance,
-                                           validation_data=(self.X_val, self.y_val),
-                                           callbacks=[mc_cb, rl_cb, es_cb],
-                                           workers=3,
-                                           verbose=1)
+                                           validation_data=(
+            self.X_val, self.y_val),
+            callbacks=[mc_cb, rl_cb, es_cb],
+            workers=3,
+            verbose=1)
         return history
 
 
