@@ -44,7 +44,9 @@ from learning import Learning, plot_hist
 from utils import model_load, model_delete
 from auc_analysis import Miss_classify, Miss_regression
 from auc_analysis import cross_making, miss_summarize
-from auc_analysis import summary_analysis_binary, summary_analysis_regression
+from auc_analysis import (summary_analysis_binary,
+                          summary_analysis_categorical,
+                          summary_analysis_regression)
 
 # 設定ファイルの読み込み
 from settings import Settings
@@ -214,8 +216,8 @@ def main():
             summary_analysis_binary(miss_file, summary_file, fig_file,
                                     settings.IMG_ROOT, settings.ALPHA)
         elif settings.PIC_MODE == 1:
-            summary_analysis_binary(miss_file, summary_file,
-                                    settings.IMG_ROOT, settings.ALPHA)
+            summary_analysis_categorical(miss_file, summary_file,
+                                         settings.IMG_ROOT, settings.ALPHA)
         elif settings.PIC_MODE == 2:
             summary_analysis_regression(miss_file, summary_file, fig_file)
 
