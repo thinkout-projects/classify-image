@@ -51,6 +51,7 @@ from auc_analysis import (summary_analysis_binary,
 # 設定ファイルの読み込み
 from settings import Settings
 
+PIC_MODE = 2
 
 def main():
     printWithDate("main() function is started")
@@ -147,19 +148,10 @@ def main():
                 model = model_ch.xception()
 
             # optimizerはSGD
-            if(settings.PIC_MODE != 2):
-                optimizer = SGD(lr=0.0001, decay=1e-6, momentum=0.9,
-                                nesterov=True)  # Adam(lr = 0.0005)
-            else:
-                optimizer = Adam(lr=0.0001)
+            optimizer = Adam(lr=0.0001)
 
             # lossは画像解析のモードによる。
-            if settings.PIC_MODE == 0:
-                loss = "binary_crossentropy"
-            elif settings.PIC_MODE == 1:
-                loss = "categorical_crossentropy"
-            elif settings.PIC_MODE == 2:
-                loss = "mean_squared_error"
+            loss = "mean_squared_error"
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
@@ -180,11 +172,8 @@ def main():
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
             y_pred = model.predict(X_val)
-            if settings.PIC_MODE != 2:
-                Miss_classify(idx, y_pred, y_val, W_val, settings.TEST_ROOT,
-                              miss_folder).miss_csv_making()
-            else:
-                Miss_regression(idx, y_pred, y_val, W_val,
+
+            Miss_regression(idx, y_pred, y_val, W_val,
                                 miss_folder).miss_csv_making()
             printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
             model_delete(model, model_folder, idx)
@@ -210,16 +199,8 @@ def main():
         # miss_summary.csvを元に各種解析を行う
         # Kは不要
         miss_summarize(miss_folder, miss_file)
-        if settings.PIC_MODE != 2:
-            cross_making(miss_folder, settings.K, cross_file)
-        if settings.PIC_MODE == 0:
-            summary_analysis_binary(miss_file, summary_file, fig_file,
-                                    settings.IMG_ROOT, settings.ALPHA)
-        elif settings.PIC_MODE == 1:
-            summary_analysis_categorical(miss_file, summary_file,
-                                         settings.IMG_ROOT, settings.ALPHA)
-        elif settings.PIC_MODE == 2:
-            summary_analysis_regression(miss_file, summary_file, fig_file)
+
+        summary_analysis_regression(miss_file, summary_file, fig_file)
 
     printWithDate("main() function is end")
     return

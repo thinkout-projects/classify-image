@@ -51,6 +51,8 @@ from auc_analysis import (summary_analysis_binary,
 # 設定ファイルの読み込み
 from settings import Settings
 
+PIC_MODE = 0
+
 
 def main():
     printWithDate("main() function is started")
