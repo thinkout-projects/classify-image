@@ -15,8 +15,7 @@ from time import sleep
 # GPU使用量の調整
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
-from keras.backend import tensorflow_backend
-from keras.backend import clear_session
+from keras.backend.tensorflow_backend import clear_session
 
 # folder関連
 from utils import folder_create, folder_delete, folder_clean
@@ -61,7 +60,6 @@ def main():
     config = tf.ConfigProto()
     # config.gpu_options.per_process_gpu_memory_fraction = 0.8
     config.gpu_options.allow_growth = True
-    set_session(tf.Session(config=config))
 
     # 作業ディレクトリを自身のファイルのディレクトリに変更
     os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -115,6 +113,8 @@ def main():
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
         for output_folder in settings.OUTPUT_FOLDER_LIST:
+            set_session(tf.Session(config=config))
+
             folder_create(output_folder)
             history_folder = os.path.join(output_folder, "history")
             model_folder = os.path.join(output_folder, "model")
@@ -178,7 +178,6 @@ def main():
             printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
             model_delete(model, model_folder, idx)
             clear_session()
-            tensorflow_backend.clear_session()
 
         # 訓練用フォルダおよびテスト用フォルダを削除する。
         folder_delete(settings.TRAIN_ROOT)
