@@ -51,7 +51,6 @@ from auc_analysis import (summary_analysis_binary,
 # 設定ファイルの読み込み
 from settings import Settings
 
-PIC_MODE = 0
 
 
 def main():
@@ -76,6 +75,11 @@ def main():
     # 分類数を調べる。
     classes = len(os.listdir(settings.IMG_ROOT))
     printWithDate(f'{classes} classes found')
+    # pic_modeを決める
+    if classes ==2:
+      PIC_MODE=0
+    else :
+      PIC_MODE=1
 
     # ここで、データ拡張の方法を指定。
     folder_list = os.listdir(settings.IMG_ROOT)
@@ -98,14 +102,14 @@ def main():
         printWithDate(f'making data for validation [{idx + 1}/{settings.K}]')
         validation = Validation(settings.IMG_SIZE, settings.IMG_ROOT,
                                 settings.TEST_ROOT, settings.DATASET_FOLDER,
-                                classes, settings.PIC_MODE, idx)
+                                classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
         printWithDate(f'making data for training [{idx + 1}/{settings.K}]')
         training = Training(settings.IMG_ROOT, settings.DATASET_FOLDER,
-                            settings.TRAIN_ROOT, idx, settings.PIC_MODE,
+                            settings.TRAIN_ROOT, idx, PIC_MODE,
                             train_num_mode_dic, settings.IMG_SIZE,
                             classes, settings.ROTATION_RANGE,
                             settings.WIDTH_SHIFT_RANGE,
@@ -127,7 +131,7 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models(settings.IMG_SIZE, classes, settings.PIC_MODE)
+            model_ch = Models(settings.IMG_SIZE, classes, PIC_MODE)
 
             if output_folder == 'VGG16':
                 model = model_ch.vgg16()
@@ -149,24 +153,21 @@ def main():
                 model = model_ch.xception()
 
             # optimizerはSGD
-            if(settings.PIC_MODE != 2):
-                optimizer = SGD(lr=0.0001, decay=1e-6, momentum=0.9,
-                                nesterov=True)  # Adam(lr = 0.0005)
-            else:
-                optimizer = Adam(lr=0.0001)
+            optimizer = SGD(lr=0.0001, decay=1e-6, momentum=0.9,
+                            nesterov=True)  # Adam(lr = 0.0005)
+            
 
             # lossは画像解析のモードによる。
-            if settings.PIC_MODE == 0:
+            if PIC_MODE == 0:
                 loss = "binary_crossentropy"
-            elif settings.PIC_MODE == 1:
+            elif PIC_MODE == 1:
                 loss = "categorical_crossentropy"
-            elif settings.PIC_MODE == 2:
-                loss = "mean_squared_error"
+
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
             learning = Learning(settings.IMG_ROOT, settings.DATASET_FOLDER,
-                                settings.TRAIN_ROOT, idx, settings.PIC_MODE,
+                                settings.TRAIN_ROOT, idx, PIC_MODE,
                                 train_num_mode_dic, settings.IMG_SIZE, classes,
                                 settings.ROTATION_RANGE,
                                 settings.WIDTH_SHIFT_RANGE,
@@ -182,12 +183,9 @@ def main():
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
             y_pred = model.predict(X_val)
-            if settings.PIC_MODE != 2:
-                Miss_classify(idx, y_pred, y_val, W_val, settings.TEST_ROOT,
-                              miss_folder).miss_csv_making()
-            else:
-                Miss_regression(idx, y_pred, y_val, W_val,
-                                miss_folder).miss_csv_making()
+            Miss_classify(idx, y_pred, y_val, W_val, settings.TEST_ROOT,
+                          miss_folder).miss_csv_making()
+            
             printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
             model_delete(model, model_folder, idx)
             clear_session()
@@ -212,16 +210,14 @@ def main():
         # miss_summary.csvを元に各種解析を行う
         # Kは不要
         miss_summarize(miss_folder, miss_file)
-        if settings.PIC_MODE != 2:
-            cross_making(miss_folder, settings.K, cross_file)
-        if settings.PIC_MODE == 0:
+        cross_making(miss_folder, settings.K, cross_file)
+        if PIC_MODE == 0:
             summary_analysis_binary(miss_file, summary_file, fig_file,
                                     settings.IMG_ROOT, settings.ALPHA)
-        elif settings.PIC_MODE == 1:
+        elif PIC_MODE == 1:
             summary_analysis_categorical(miss_file, summary_file,
-                                         settings.IMG_ROOT, settings.ALPHA)
-        elif settings.PIC_MODE == 2:
-            summary_analysis_regression(miss_file, summary_file, fig_file)
+                                          settings.IMG_ROOT, settings.ALPHA)
+
 
     printWithDate("main() function is end")
     return

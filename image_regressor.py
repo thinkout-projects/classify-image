@@ -97,14 +97,14 @@ def main():
         printWithDate(f'making data for validation [{idx + 1}/{settings.K}]')
         validation = Validation(settings.IMG_SIZE, settings.IMG_ROOT,
                                 settings.TEST_ROOT, settings.DATASET_FOLDER,
-                                classes, settings.PIC_MODE, idx)
+                                classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
         printWithDate(f'making data for training [{idx + 1}/{settings.K}]')
         training = Training(settings.IMG_ROOT, settings.DATASET_FOLDER,
-                            settings.TRAIN_ROOT, idx, settings.PIC_MODE,
+                            settings.TRAIN_ROOT, idx, PIC_MODE,
                             train_num_mode_dic, settings.IMG_SIZE,
                             classes, settings.ROTATION_RANGE,
                             settings.WIDTH_SHIFT_RANGE,
@@ -126,7 +126,7 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models(settings.IMG_SIZE, classes, settings.PIC_MODE)
+            model_ch = Models(settings.IMG_SIZE, classes, PIC_MODE)
 
             if output_folder == 'VGG16':
                 model = model_ch.vgg16()
@@ -156,7 +156,7 @@ def main():
             # modelをcompileする。
             model_compile(model, loss, optimizer)
             learning = Learning(settings.IMG_ROOT, settings.DATASET_FOLDER,
-                                settings.TRAIN_ROOT, idx, settings.PIC_MODE,
+                                settings.TRAIN_ROOT, idx, PIC_MODE,
                                 train_num_mode_dic, settings.IMG_SIZE, classes,
                                 settings.ROTATION_RANGE,
                                 settings.WIDTH_SHIFT_RANGE,
