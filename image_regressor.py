@@ -51,6 +51,7 @@ from settings import Settings
 
 PIC_MODE = 2
 
+
 def main():
     printWithDate("main() function is started")
 
@@ -173,7 +174,7 @@ def main():
             y_pred = model.predict(X_val)
 
             Miss_regression(idx, y_pred, y_val, W_val,
-                                miss_folder).miss_csv_making()
+                            miss_folder).miss_csv_making()
             printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
             model_delete(model, model_folder, idx)
             clear_session()
