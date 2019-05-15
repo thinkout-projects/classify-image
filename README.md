@@ -27,10 +27,10 @@ grade00の中には画像フォルダがいっぱい入っている。そんな�
   - [ ] csvファイルからのデータ読み込みに対応する
   - [ ] エポック数や学習率などのパラメータはコマンドライン引数から設定
 - learning.py
-  - [ ] modelの定義を削除する
+  - [x] modelの定義を削除する
   - [ ] csvファイルからのデータ読み込みに対応する
 - models.py
-  - [ ] learning.pyのmodelを定義している部分を記述する
+  - [x] learning.pyのmodelを定義している部分を記述する
   - [ ] modelの出力部分を改良する
 - data_generator.py
   - [ ] training.py、validation_data.py、data_augment.pyをまとめて記述する
