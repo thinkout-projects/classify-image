@@ -33,7 +33,7 @@ grade00の中には画像フォルダがいっぱい入っている。そんな�
   - [x] learning.pyのmodelを定義している部分を記述する
   - [ ] modelの出力部分を改良する
 - data_generator.py
-  - [ ] training.py、validation_data.py、data_augment.pyをまとめて記述する
+  - [x] training.py、validation_data.py、data_augment.pyをまとめて記述する
   - [ ] 画像増幅→学習中に画像増幅をやめて、学習中に画像増幅に一本化する
   - [ ] csvファイルからのデータ読み込みに対応する
 - auc_nalysis.py
