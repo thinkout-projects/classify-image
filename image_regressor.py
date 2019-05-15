@@ -26,7 +26,6 @@ from k_fold_split import Split
 # 評価用データの作成および読みこみ
 # train/00_normal/画像ファイル)
 # train/01_Gla/(画像ファイル)
-from validation_data import Validation
 
 # モデルコンパイル
 from keras.optimizers import Adam, SGD
@@ -34,7 +33,7 @@ from models import Models
 from utils import model_compile
 
 # 訓練用データの作成およびデータ拡張後の読みこみ
-from training_data import Training
+from data_generator import Training, Validation
 
 # modelの定義およびコンパイル、学習、保存、学習経過のプロット
 from learning import Learning, plot_hist
@@ -51,6 +50,7 @@ from auc_analysis import (summary_analysis_binary,
 from settings import Settings
 
 PIC_MODE = 2
+
 
 def main():
     printWithDate("main() function is started")
@@ -174,7 +174,7 @@ def main():
             y_pred = model.predict(X_val)
 
             Miss_regression(idx, y_pred, y_val, W_val,
-                                miss_folder).miss_csv_making()
+                            miss_folder).miss_csv_making()
             printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
             model_delete(model, model_folder, idx)
             clear_session()

@@ -26,7 +26,6 @@ from k_fold_split import Split
 # 評価用データの作成および読みこみ
 # train/00_normal/画像ファイル)
 # train/01_Gla/(画像ファイル)
-from validation_data import Validation
 
 # モデルコンパイル
 from keras.optimizers import Adam, SGD
@@ -34,7 +33,7 @@ from models import Models
 from utils import model_compile
 
 # 訓練用データの作成およびデータ拡張後の読みこみ
-from training_data import Training
+from data_generator import Training, Validation
 
 # modelの定義およびコンパイル、学習、保存、学習経過のプロット
 from learning import Learning, plot_hist

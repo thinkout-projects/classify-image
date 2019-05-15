@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # main関数
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
-from training_data import Training
+from data_generator import Training
 from utils import fpath_tag_making
 # regression用に
 
