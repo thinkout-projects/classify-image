@@ -30,7 +30,7 @@ from validation_data import Validation
 
 # モデルコンパイル
 from keras.optimizers import Adam, SGD
-from learning import Models
+from models import Models
 from utils import model_compile
 
 # 訓練用データの作成およびデータ拡張後の読みこみ
