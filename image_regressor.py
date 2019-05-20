@@ -47,7 +47,7 @@ from auc_analysis import (summary_analysis_binary,
                           summary_analysis_regression)
 
 # 設定ファイルの読み込み
-from settings import Settings
+import configparser
 
 PIC_MODE = 2
 
@@ -65,54 +65,55 @@ def main():
     os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     # Settingsのロード
-    settings = Settings()
+    settings = configparser.ConfigParser()
+    settings.read('parameter.conf')
 
     # desktop.iniの削除
-    folder_clean(settings.IMG_ROOT)
+    folder_clean(settings.get('Folders', 'IMG_ROOT'))
 
     # 分類数を調べる。
-    classes = len(os.listdir(settings.IMG_ROOT))
+    classes = len(os.listdir(settings.get('Folders', 'IMG_ROOT')))
     printWithDate(f'{classes} classes found')
 
     # ここで、データ拡張の方法を指定。
-    folder_list = os.listdir(settings.IMG_ROOT)
+    folder_list = os.listdir(settings.get('Folders', 'IMG_ROOT'))
     train_num_mode_dic = {}
 
     # gradeごとにデータ拡張の方法を変える場合はここを変更
     for i, folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [settings.NUM_OF_AUGS, settings.USE_FLIP]
+        train_num_mode_dic[folder] = [settings.get('DataGenerator', 'NUM_OF_AUGS'), settings.get('DataGenerator', 'USE_FLIP')]
 
     # 分割
     printWithDate("spliting dataset")
-    split = Split(settings.K, settings.IMG_ROOT, settings.DATASET_FOLDER)
+    split = Split(settings.get('validation', 'K'), settings.get('Folders', 'IMG_ROOT'), settings.get('Folders', 'DATASET_FOLDER'))
     split.k_fold_split_unique()
 
     # 分割ごとに
-    for idx in range(settings.K):
-        printWithDate(f'processing sprited dataset {idx + 1}/{settings.K}')
+    for idx in range(settings.get('validation', 'K')):
+        printWithDate(f"processing sprited dataset {idx + 1}/{settings.get('validation', 'K')}")
 
         # 評価用データについて
-        printWithDate(f'making data for validation [{idx + 1}/{settings.K}]')
-        validation = Validation(settings.IMG_SIZE, settings.IMG_ROOT,
-                                settings.TEST_ROOT, settings.DATASET_FOLDER,
+        printWithDate(f"making data for validation [{idx + 1}/{settings.get('validation', 'K')}]")
+        validation = Validation(settings.get('HyperParameter', 'IMG_SIZE'), settings.get('Folders', 'IMG_ROOT'),
+                                settings.get('Folders', 'TEST_ROOT'), settings.get('Folders', 'DATASET_FOLDER'),
                                 classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
         # 訓練用データについて
-        printWithDate(f'making data for training [{idx + 1}/{settings.K}]')
-        training = Training(settings.IMG_ROOT, settings.DATASET_FOLDER,
-                            settings.TRAIN_ROOT, idx, PIC_MODE,
-                            train_num_mode_dic, settings.IMG_SIZE,
-                            classes, settings.ROTATION_RANGE,
-                            settings.WIDTH_SHIFT_RANGE,
-                            settings.HEIGHT_SHIFT_RANGE, settings.SHEAR_RANGE,
-                            settings.ZOOM_RANGE, settings.BATCH_SIZE)
+        printWithDate(f"making data for training [{idx + 1}/{settings.get('validation', 'K')}]")
+        training = Training(settings.get('Folders', 'IMG_ROOT'), settings.get('Folders', 'DATASET_FOLDER'),
+                            settings.get('Folders', 'TRAIN_ROOT'), idx, PIC_MODE,
+                            train_num_mode_dic, settings.get('HyperParameter', 'IMG_SIZE'),
+                            classes, settings.get('HyperParameter', 'ROTATION_RANGE'),
+                            settings.get('HyperParameter', 'WIDTH_SHIFT_RANGE'),
+                            settings.get('HyperParameter', 'HEIGHT_SHIFT_RANGE'), settings.get('HyperParameter', 'SHEAR_RANGE'),
+                            settings.get('HyperParameter', 'ZOOM_RANGE'), settings.get('HyperParameter', 'BATCH_SIZE'))
         training.pic_df_training()
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
-        for output_folder in settings.OUTPUT_FOLDER_LIST:
+        for output_folder in settings.get('Folders', 'OUTPUT_FOLDER_LIST'):
             set_session(tf.Session(config=config))
 
             folder_create(output_folder)
@@ -126,7 +127,7 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models(settings.IMG_SIZE, classes, PIC_MODE)
+            model_ch = Models(settings.get('HyperParameter', 'IMG_SIZE'), classes, PIC_MODE)
 
             if output_folder == 'VGG16':
                 model = model_ch.vgg16()
@@ -155,19 +156,19 @@ def main():
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
-            learning = Learning(settings.IMG_ROOT, settings.DATASET_FOLDER,
-                                settings.TRAIN_ROOT, idx, PIC_MODE,
-                                train_num_mode_dic, settings.IMG_SIZE, classes,
-                                settings.ROTATION_RANGE,
-                                settings.WIDTH_SHIFT_RANGE,
-                                settings.HEIGHT_SHIFT_RANGE,
-                                settings.SHEAR_RANGE, settings.ZOOM_RANGE,
-                                settings.BATCH_SIZE, model_folder, model,
-                                X_val, y_val, settings.EPOCHS)
+            learning = Learning(settings.get('Folders', 'IMG_ROOT'), settings.get('Folders', 'DATASET_FOLDER'),
+                                settings.get('Folders', 'TRAIN_ROOT'), idx, PIC_MODE,
+                                train_num_mode_dic, settings.get('HyperParameter', 'IMG_SIZE'), classes,
+                                settings.get('HyperParameter', 'ROTATION_RANGE'),
+                                settings.get('HyperParameter', 'WIDTH_SHIFT_RANGE'),
+                                settings.get('HyperParameter', 'HEIGHT_SHIFT_RANGE'),
+                                settings.get('HyperParameter', 'SHEAR_RANGE'), settings.get('HyperParameter', 'ZOOM_RANGE'),
+                                settings.get('HyperParameter', 'BATCH_SIZE'), model_folder, model,
+                                X_val, y_val, settings.get('HyperParameter', 'EPOCHS'))
 
             # 訓練実行
             history = learning.learning_model()
-            printWithDate(f'Learning finished [{idx + 1}/{settings.K}]')
+            printWithDate(f"Learning finished [{idx + 1}/{settings.get('validation', 'K')}]")
 
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
@@ -175,21 +176,21 @@ def main():
 
             Miss_regression(idx, y_pred, y_val, W_val,
                             miss_folder).miss_csv_making()
-            printWithDate(f'Analysis finished [{idx + 1}/{settings.K}]')
+            printWithDate(f"Analysis finished [{idx + 1}/{settings.get('validation', 'K')}]")
             model_delete(model, model_folder, idx)
             clear_session()
 
         # 訓練用フォルダおよびテスト用フォルダを削除する。
-        folder_delete(settings.TRAIN_ROOT)
-        folder_delete(settings.TEST_ROOT)
+        folder_delete(settings.get('Folders', 'TRAIN_ROOT'))
+        folder_delete(settings.get('Folders', 'TEST_ROOT'))
 
         # colabとdriveの同期待ちをする
-        for i in trange(settings.WAITSEC,
+        for i in trange(settings.get('etc', 'WAITSEC'),
                         desc='Waiting for syncing with GDrive'):
             sleep(1)
 
     printWithDate("output Summary Analysis")
-    for output_folder in settings.OUTPUT_FOLDER_LIST:
+    for output_folder in settings.get('Folders', 'OUTPUT_FOLDER_LIST'):
         miss_folder = os.path.join(output_folder, "miss")
         summary_file = os.path.join(output_folder, "summary.csv")
         cross_file = os.path.join(output_folder, "cross.csv")
