@@ -66,7 +66,7 @@ def main():
 
     # Settingsのロード
     settings = configparser.ConfigParser()
-    settings.read('parameter.conf')
+    settings.read('options.conf')
 
     # desktop.iniの削除
     folder_clean(settings.get('Folders', 'IMG_ROOT'))
