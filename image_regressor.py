@@ -101,8 +101,8 @@ def main():
 
         # 評価用データについて
         printWithDate(f"making data for validation [{idx + 1}/{VALID['k']}]")
-        validation = Validation(HYPERS['IMG_SIZE'], FOLDERS['dataset_root'],
-                                FOLDERS['TEST_ROOT'], FOLDERS['dataset_info'],
+        validation = Validation(HYPERS['img_size'], FOLDERS['dataset_root'],
+                                FOLDERS['test_root'], FOLDERS['dataset_info'],
                                 classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
@@ -110,8 +110,8 @@ def main():
         # 訓練用データについて
         printWithDate(f"making data for training [{idx + 1}/{VALID['k']}]")
         training = Training(FOLDERS['dataset_root'], FOLDERS['dataset_info'],
-                            FOLDERS['TRAIN_ROOT'], idx, PIC_MODE,
-                            train_num_mode_dic, HYPERS['IMG_SIZE'],
+                            FOLDERS['train_root'], idx, PIC_MODE,
+                            train_num_mode_dic, HYPERS['img_size'],
                             classes, HYPERS['ratation_range'],
                             HYPERS['width_shift_range'],
                             HYPERS['height_shift_range'],
@@ -134,7 +134,7 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models(HYPERS['IMG_SIZE'], classes, PIC_MODE)
+            model_ch = Models(HYPERS['img_size'], classes, PIC_MODE)
 
             if output_folder == 'VGG16':
                 model = model_ch.vgg16()
@@ -165,8 +165,8 @@ def main():
             model_compile(model, loss, optimizer)
             learning = Learning(FOLDERS['dataset_root'],
                                 FOLDERS['dataset_info'],
-                                FOLDERS['TRAIN_ROOT'], idx, PIC_MODE,
-                                train_num_mode_dic, HYPERS['IMG_SIZE'],
+                                FOLDERS['train_root'], idx, PIC_MODE,
+                                train_num_mode_dic, HYPERS['img_size'],
                                 classes,
                                 HYPERS['ratation_range'],
                                 HYPERS['width_shift_range'],
@@ -190,8 +190,8 @@ def main():
             clear_session()
 
         # 訓練用フォルダおよびテスト用フォルダを削除する。
-        folder_delete(FOLDERS['TRAIN_ROOT'])
-        folder_delete(FOLDERS['TEST_ROOT'])
+        folder_delete(FOLDERS['train_root'])
+        folder_delete(FOLDERS['test_root'])
 
         # colabとdriveの同期待ちをする
         for i in trange(ETC['wait_sec'],
