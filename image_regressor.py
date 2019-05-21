@@ -101,7 +101,8 @@ def main():
 
         # 評価用データについて
         printWithDate(f"making data for validation [{idx + 1}/{VALID['k']}]")
-        validation = Validation(HYPERS['img_size'], FOLDERS['dataset_root'],
+        validation = Validation([HYPERS['img_size_x'], HYPERS['img_size_y']],
+                                FOLDERS['dataset_root'],
                                 FOLDERS['test_root'], FOLDERS['dataset_info'],
                                 classes, PIC_MODE, idx)
         validation.pic_df_test()
@@ -111,7 +112,8 @@ def main():
         printWithDate(f"making data for training [{idx + 1}/{VALID['k']}]")
         training = Training(FOLDERS['dataset_root'], FOLDERS['dataset_info'],
                             FOLDERS['train_root'], idx, PIC_MODE,
-                            train_num_mode_dic, HYPERS['img_size'],
+                            train_num_mode_dic,
+                            [HYPERS['img_size_x'], HYPERS['img_size_y']],
                             classes, HYPERS['ratation_range'],
                             HYPERS['width_shift_range'],
                             HYPERS['height_shift_range'],
@@ -120,7 +122,7 @@ def main():
         training.pic_df_training()
 
         # model定義
-        # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
+        # modelの関係をLearningクラスのコンストラクタで使うから先にここで定義
         for output_folder in NETWORK:
             set_session(tf.Session(config=config))
 
@@ -134,7 +136,8 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models(HYPERS['img_size'], classes, PIC_MODE)
+            model_ch = Models([HYPERS['img_size_x'], HYPERS['img_size_y']],
+                              classes, PIC_MODE)
 
             if output_folder == 'VGG16':
                 model = model_ch.vgg16()
@@ -166,7 +169,8 @@ def main():
             learning = Learning(FOLDERS['dataset_root'],
                                 FOLDERS['dataset_info'],
                                 FOLDERS['train_root'], idx, PIC_MODE,
-                                train_num_mode_dic, HYPERS['img_size'],
+                                train_num_mode_dic,
+                                [HYPERS['img_size_x'], HYPERS['img_size_y']],
                                 classes,
                                 HYPERS['ratation_range'],
                                 HYPERS['width_shift_range'],
