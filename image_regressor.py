@@ -30,7 +30,7 @@ from k_fold_split import Split
 # train/01_Gla/(画像ファイル)
 
 # モデルコンパイル
-from keras.optimizers import Adam, SGD
+from keras.optimizers import Adam
 from models import Models
 from utils import model_compile
 
@@ -42,11 +42,9 @@ from learning import Learning, plot_hist
 
 # 評価、結果の分析
 from utils import model_load, model_delete
-from auc_analysis import Miss_classify, Miss_regression
-from auc_analysis import cross_making, miss_summarize
-from auc_analysis import (summary_analysis_binary,
-                          summary_analysis_categorical,
-                          summary_analysis_regression)
+from auc_analysis import Miss_regression
+from auc_analysis import miss_summarize
+from auc_analysis import summary_analysis_regression
 
 # configparserを使った設定ファイルの読み込み
 import configparser
@@ -89,7 +87,8 @@ def main():
 
     # gradeごとにデータ拡張の方法を変える場合はここを変更
     for i, folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [DATAGEN['num_of_augs'], DATAGEN['use_flip']]
+        train_num_mode_dic[folder] = [DATAGEN['num_of_augs'],
+                                      DATAGEN['use_flip']]
 
     # 分割
     printWithDate("spliting dataset")
@@ -115,7 +114,8 @@ def main():
                             train_num_mode_dic, HYPERS['IMG_SIZE'],
                             classes, HYPERS['ratation_range'],
                             HYPERS['width_shift_range'],
-                            HYPERS['height_shift_range'], HYPERS['shear_range'],
+                            HYPERS['height_shift_range'],
+                            HYPERS['shear_range'],
                             HYPERS['zoom_range'], HYPERS['batch_size'])
         training.pic_df_training()
 
@@ -131,7 +131,6 @@ def main():
             # roc_folder = os.path.join(output_folder, "roc")
             # result_file = os.path.join(output_folder, "result.csv")
             summary_file = os.path.join(output_folder, "summary.csv")
-            cross_file = os.path.join(output_folder, "cross.csv")
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
@@ -164,9 +163,11 @@ def main():
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
-            learning = Learning(FOLDERS['dataset_root'], FOLDERS['dataset_info'],
+            learning = Learning(FOLDERS['dataset_root'],
+                                FOLDERS['dataset_info'],
                                 FOLDERS['TRAIN_ROOT'], idx, PIC_MODE,
-                                train_num_mode_dic, HYPERS['IMG_SIZE'], classes,
+                                train_num_mode_dic, HYPERS['IMG_SIZE'],
+                                classes,
                                 HYPERS['ratation_range'],
                                 HYPERS['width_shift_range'],
                                 HYPERS['height_shift_range'],
@@ -202,7 +203,6 @@ def main():
         # TODO: for文のNETWORK対応
         miss_folder = os.path.join(output_folder, "miss")
         summary_file = os.path.join(output_folder, "summary.csv")
-        cross_file = os.path.join(output_folder, "cross.csv")
         miss_file = os.path.join(output_folder, "miss_summary.csv")
         fig_file = os.path.join(output_folder, "figure.png")
         # miss_summary.csvを元に各種解析を行う

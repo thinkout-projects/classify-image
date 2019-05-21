@@ -33,7 +33,7 @@ from k_fold_split import Split
 # train/01_Gla/(画像ファイル)
 
 # モデルコンパイル
-from keras.optimizers import Adam, SGD
+from keras.optimizers import SGD
 from models import Models
 from utils import model_compile
 
@@ -45,11 +45,10 @@ from learning import Learning, plot_hist
 
 # 評価、結果の分析
 from utils import model_load, model_delete
-from auc_analysis import Miss_classify, Miss_regression
+from auc_analysis import Miss_classify
 from auc_analysis import cross_making, miss_summarize
 from auc_analysis import (summary_analysis_binary,
-                          summary_analysis_categorical,
-                          summary_analysis_regression)
+                          summary_analysis_categorical)
 
 # configparserを使った設定ファイルの読み込み
 import configparser
@@ -83,11 +82,12 @@ def main():
     # 分類数を調べる。
     classes = len(os.listdir(FOLDERS['dataset_root']))
     printWithDate(f'{classes} classes found')
+
     # pic_modeを決める
-    if classes ==2:
-      PIC_MODE=0
-    else :
-      PIC_MODE=1
+    if classes == 2:
+        PIC_MODE = 0
+    else:
+        PIC_MODE = 1
 
     # ここで、データ拡張の方法を指定。
     folder_list = os.listdir(FOLDERS['dataset_root'])
@@ -95,7 +95,8 @@ def main():
 
     # gradeごとにデータ拡張の方法を変える場合はここを変更
     for i, folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [DATAGEN['num_of_augs'], DATAGEN['use_flip']]
+        train_num_mode_dic[folder] = [DATAGEN['num_of_augs'],
+                                      DATAGEN['use_flip']]
 
     # 分割
     printWithDate("spliting dataset")
@@ -121,12 +122,13 @@ def main():
                             train_num_mode_dic, HYPERS['IMG_SIZE'],
                             classes, HYPERS['ratation_range'],
                             HYPERS['width_shift_range'],
-                            HYPERS['height_shift_range'], HYPERS['shear_range'],
+                            HYPERS['height_shift_range'],
+                            HYPERS['shear_range'],
                             HYPERS['zoom_range'], HYPERS['batch_size'])
         training.pic_df_training()
 
         # model定義
-        # modelの関係をLearningクラスのコンストラクタで使うから先に、ここで定義
+        # modelの関係をLearningクラスのコンストラクタで使うから先にここで定義
         for output_folder in NETWORK:
             # TODO: for文のNETWORK対応
             set_session(tf.Session(config=config))
@@ -173,12 +175,13 @@ def main():
             elif PIC_MODE == 1:
                 loss = "categorical_crossentropy"
 
-
             # modelをcompileする。
             model_compile(model, loss, optimizer)
-            learning = Learning(FOLDERS['dataset_root'], FOLDERS['dataset_info'],
+            learning = Learning(FOLDERS['dataset_root'],
+                                FOLDERS['dataset_info'],
                                 FOLDERS['TRAIN_ROOT'], idx, PIC_MODE,
-                                train_num_mode_dic, HYPERS['IMG_SIZE'], classes,
+                                train_num_mode_dic, HYPERS['IMG_SIZE'],
+                                classes,
                                 HYPERS['ratation_range'],
                                 HYPERS['width_shift_range'],
                                 HYPERS['height_shift_range'],
@@ -195,7 +198,7 @@ def main():
             y_pred = model.predict(X_val)
             Miss_classify(idx, y_pred, y_val, W_val, FOLDERS['TEST_ROOT'],
                           miss_folder).miss_csv_making()
-            
+
             printWithDate(f"Analysis finished [{idx + 1}/{VALID['k']}]")
             model_delete(model, model_folder, idx)
             clear_session()
@@ -226,8 +229,8 @@ def main():
                                     FOLDERS['dataset_root'], VALID['alpha'])
         elif PIC_MODE == 1:
             summary_analysis_categorical(miss_file, summary_file,
-                                          FOLDERS['dataset_root'], VALID['alpha'])
-
+                                         FOLDERS['dataset_root'],
+                                         VALID['alpha'])
 
     printWithDate("main() function is end")
     return
