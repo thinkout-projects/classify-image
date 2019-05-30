@@ -15,6 +15,7 @@ from keras.utils import np_utils
 
 from pytz import timezone
 from datetime import datetime
+import error
 
 
 def printWithDate(*printee):
@@ -27,6 +28,60 @@ def printWithDate(*printee):
     for i in printee:
         print(i, end="")
     print()
+    return
+
+
+def check_options(Options):
+    '''
+    options.confが想定通りのフォーマットになっているかチェックする
+    '''
+    SECTIONS = ['FolderName',
+                'NetworkUsing',
+                'ImageSize',
+                'HyperParameter',
+                'DataGenerate',
+                'ImageDataGenerator',
+                'Validation',
+                'Analysis',
+                'etc']
+
+    OPTIONS = [['dataset',
+                'split_info',
+                'train',
+                'test'],
+               ['VGG16',
+                'VGG19',
+                'DenseNet121',
+                'DenseNet169',
+                'DenseNet201',
+                'InceptionResNetV2',
+                'InceptionV3',
+                'ResNet50',
+                'Xception'],
+               ['x',
+                'y'],
+               ['batch_size',
+                'epochs'],
+               ['num_of_augs',
+                'use_flip'],
+               ['rotation_range',
+                'width_shift_range',
+                'height_shift_range',
+                'shear_range',
+                'zoom_range'],
+               ['k'],
+               ['alpha'],
+               ['wait_sec']]
+
+    # 欠けているセクション・オプションがないか調べる
+    for section_id, section_name in enumerate(SECTIONS):
+        if Options.has_section(section_name) is False:
+            error.section_not_found(section_name)
+        else:
+            for option_name in OPTIONS[section_id]:
+                if Options.has_option(section_name, option_name) is False:
+                    error.option_not_found(section_name, option_name)
+
     return
 
 
