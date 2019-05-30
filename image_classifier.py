@@ -91,26 +91,26 @@ def main():
 
     # gradeごとにデータ拡張の方法を変える場合はここを変更
     for i, folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [options['DataGenerate']['num_of_augs'],
-                                      options['DataGenerate']['use_flip']]
+        train_num_mode_dic[folder] = [options.getint('DataGenerate', 'num_of_augs'),
+                                      options.getboolean('DataGenerate', 'use_flip')]
 
     # 分割
     printWithDate("spliting dataset")
-    split = Split(options['Validation']['k'],
+    split = Split(options.getint('Validation', 'k'),
                   options['FolderName']['dataset'],
                   options['FolderName']['split_info'])
     split.k_fold_split_unique()
 
     # 分割ごとに
-    for idx in range(options['Validation']['k']):
+    for idx in range(options.getint('Validation', 'k')):
         printWithDate("processing sprited dataset",
-                      f"{idx + 1}/{options['Validation']['k']}")
+                      f"{idx + 1}/{options.getint('Validation', 'k')}")
 
         # 評価用データについて
         printWithDate("making data for validation",
-                      f"[{idx + 1}/{options['Validation']['k']}]")
-        validation = Validation([options['ImageSize']['x'],
-                                 options['ImageSize']['y']],
+                      f"[{idx + 1}/{options.getint('Validation', 'k')}]")
+        validation = Validation([options.getint('ImageSize', 'x'),
+                                 options.getint('ImageSize', 'y')],
                                 options['FolderName']['dataset'],
                                 options['FolderName']['test'],
                                 options['FolderName']['split_info'],
@@ -120,20 +120,20 @@ def main():
 
         # 訓練用データについて
         printWithDate("making data for training",
-                      f"[{idx + 1}/{options['Validation']['k']}]")
+                      f"[{idx + 1}/{options.getint('Validation', 'k')}]")
         training = Training(options['FolderName']['dataset'],
                             options['FolderName']['split_info'],
                             options['FolderName']['train'], idx, PIC_MODE,
                             train_num_mode_dic,
-                            [options['ImageSize']['x'],
-                             options['ImageSize']['y']],
+                            [options.getint('ImageSize', 'x'),
+                             options.getint('ImageSize', 'y')],
                             classes,
-                            options['ImageDataGenerator']['ratation_range'],
-                            options['ImageDataGenerator']['width_shift_range'],
-                            options['ImageDataGenerator']['height_shift_range'],
-                            options['ImageDataGenerator']['shear_range'],
-                            options['ImageDataGenerator']['zoom_range'],
-                            options['HyperParameter']['batch_size'])
+                            options.getint('ImageDataGenerator', 'ratation_range'),
+                            options.getfloat('ImageDataGenerator', 'width_shift_range'),
+                            options.getfloat('ImageDataGenerator', 'height_shift_range'),
+                            options.getint('ImageDataGenerator', 'shear_range'),
+                            options.getfloat('ImageDataGenerator', 'zoom_range'),
+                            options.getint('HyperParameter', 'batch_size'))
         training.pic_df_training()
 
         # model定義
@@ -153,8 +153,8 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models([options['ImageSize']['x'],
-                               options['ImageSize']['y']],
+            model_ch = Models([options.getint('ImageSize', 'x'),
+                               options.getint('ImageSize', 'y')],
                               classes, PIC_MODE)
 
             if output_folder == 'VGG16':
@@ -192,23 +192,23 @@ def main():
                                 options['FolderName']['dataset_info'],
                                 options['FolderName']['train'], idx, PIC_MODE,
                                 train_num_mode_dic,
-                                [options['ImageSize']['x'],
-                                    options['ImageSize']['y']],
+                                [options.getint('ImageSize', 'x'),
+                                    options.getint('ImageSize', 'y')],
                                 classes,
-                                options['ImageDataGenerator']['ratation_range'],
-                                options['ImageDataGenerator']['width_shift_range'],
-                                options['ImageDataGenerator']['height_shift_range'],
-                                options['ImageDataGenerator']['shear_range'],
-                                options['ImageDataGenerator']['zoom_range'],
-                                options['HyperParameter']['batch_size'],
+                                options.getint('ImageDataGenerator', 'ratation_range'),
+                                options.getfloat('ImageDataGenerator', 'width_shift_range'),
+                                options.getfloat('ImageDataGenerator', 'height_shift_range'),
+                                options.getint('ImageDataGenerator', 'shear_range'),
+                                options.getfloat('ImageDataGenerator', 'zoom_range'),
+                                options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model,
                                 X_val, y_val,
-                                options['HyperParameter']['epochs'])
+                                options.getint('HyperParameter', 'epochs'))
 
             # 訓練実行
             history = learning.learning_model()
             printWithDate(
-                f"Learning finished [{idx + 1}/{options['Validation']['k']}]")
+                f"Learning finished [{idx + 1}/{options.getint('Validation', 'k')}]")
 
             plot_hist(history, history_folder, idx)
             model_load(model, model_folder, idx)
@@ -218,7 +218,7 @@ def main():
                           miss_folder).miss_csv_making()
 
             printWithDate(
-                f"Analysis finished [{idx + 1}/{options['Validation']['k']}]")
+                f"Analysis finished [{idx + 1}/{options.getint('Validation', 'k')}]")
             model_delete(model, model_folder, idx)
             clear_session()
 
@@ -227,7 +227,7 @@ def main():
         folder_delete(options['FolderName']['test'])
 
         # colabとdriveの同期待ちをする
-        for i in trange(options['etc']['wait_sec'],
+        for i in trange(options.getint('etc', 'wait_sec'),
                         desc='Waiting for syncing with GDrive'):
             sleep(1)
 
@@ -242,15 +242,15 @@ def main():
         # miss_summary.csvを元に各種解析を行う
         # Kは不要
         miss_summarize(miss_folder, miss_file)
-        cross_making(miss_folder, options['Validation']['k'], cross_file)
+        cross_making(miss_folder, options.getint('Validation', 'k'), cross_file)
         if PIC_MODE == 0:
             summary_analysis_binary(miss_file, summary_file, fig_file,
                                     options['FolderName']['dataset'],
-                                    options['Validation']['alpha'])
+                                    options.getfloat('Validation', 'alpha'))
         elif PIC_MODE == 1:
             summary_analysis_categorical(miss_file, summary_file,
                                          options['FolderName']['dataset'],
-                                         options['Validation']['alpha'])
+                                         options.getfloat('Validation', 'alpha'))
 
     printWithDate("main() function is end")
     return
