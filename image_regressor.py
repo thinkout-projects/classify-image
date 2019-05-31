@@ -101,8 +101,8 @@ def main():
         # 評価用データについて
         printWithDate("making data for validation",
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
-        validation = Validation([options.getint('ImageSize', 'x'),
-                                 options.getint('ImageSize', 'y')],
+        validation = Validation([options.getint('ImageSize', 'width'),
+                                 options.getint('ImageSize', 'height')],
                                 options['FolderName']['dataset'],
                                 options['FolderName']['test'],
                                 options['FolderName']['split_info'],
@@ -117,8 +117,8 @@ def main():
                             options['FolderName']['split_info'],
                             options['FolderName']['train'], idx, PIC_MODE,
                             train_num_mode_dic,
-                            [options.getint('ImageSize', 'x'),
-                             options.getint('ImageSize', 'y')],
+                            [options.getint('ImageSize', 'width'),
+                             options.getint('ImageSize', 'height')],
                             classes,
                             options.getint('ImageDataGenerator', 'ratation_range'),
                             options.getfloat('ImageDataGenerator', 'width_shift_range'),
@@ -144,8 +144,8 @@ def main():
             miss_file = os.path.join(output_folder, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models([options.getint('ImageSize', 'x'),
-                               options.getint('ImageSize', 'y')],
+            model_ch = Models([options.getint('ImageSize', 'width'),
+                               options.getint('ImageSize', 'height')],
                               classes, PIC_MODE)
 
             if output_folder == 'VGG16':
@@ -179,8 +179,8 @@ def main():
                                 options['FolderName']['dataset_info'],
                                 options['FolderName']['train'], idx, PIC_MODE,
                                 train_num_mode_dic,
-                                [options.getint('ImageSize', 'x'),
-                                    options.getint('ImageSize', 'y')],
+                                [options.getint('ImageSize', 'width'),
+                                    options.getint('ImageSize', 'height')],
                                 classes,
                                 options.getint('ImageDataGenerator', 'ratation_range'),
                                 options.getfloat('ImageDataGenerator', 'width_shift_range'),
