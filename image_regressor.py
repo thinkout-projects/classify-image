@@ -125,7 +125,7 @@ def main():
                              options.getint('ImageSize', 'height')],
                             classes,
                             options.getint('ImageDataGenerator',
-                                           'ratation_range'),
+                                           'rotation_range'),
                             options.getfloat(
                                 'ImageDataGenerator', 'width_shift_range'),
                             options.getfloat(
@@ -185,14 +185,14 @@ def main():
             # modelをcompileする。
             model_compile(model, loss, optimizer)
             learning = Learning(options['FolderName']['dataset'],
-                                options['FolderName']['dataset_info'],
+                                options['FolderName']['split_info'],
                                 options['FolderName']['train'], idx, PIC_MODE,
                                 train_num_mode_dic,
                                 [options.getint('ImageSize', 'width'),
                                     options.getint('ImageSize', 'height')],
                                 classes,
                                 options.getint(
-                                    'ImageDataGenerator', 'ratation_range'),
+                                    'ImageDataGenerator', 'rotation_range'),
                                 options.getfloat(
                                     'ImageDataGenerator', 'width_shift_range'),
                                 options.getfloat(
