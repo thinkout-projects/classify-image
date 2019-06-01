@@ -54,6 +54,8 @@ from auc_analysis import (summary_analysis_binary,
 import configparser
 from utils import check_options
 
+import error
+
 
 def main():
     printWithDate("main() function is started")
@@ -68,8 +70,10 @@ def main():
     os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     # 設定ファイルのロード
+    if os.path.isfile('options.conf') is False:
+        error.option_file_not_exist()
     options = configparser.ConfigParser()
-    options.read('options.conf')
+    options.read('options.conf', encoding='utf-8')
     check_options(options)
 
     # desktop.iniの削除
