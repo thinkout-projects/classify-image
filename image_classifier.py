@@ -255,11 +255,11 @@ def main():
         if PIC_MODE == 0:
             summary_analysis_binary(miss_file, summary_file, fig_file,
                                     options['FolderName']['dataset'],
-                                    options.getfloat('Validation', 'alpha'))
+                                    options.getfloat('Analysis', 'alpha'))
         elif PIC_MODE == 1:
             summary_analysis_categorical(miss_file, summary_file,
                                          options['FolderName']['dataset'],
-                                         options.getfloat('Validation', 'alpha'))
+                                         options.getfloat('Analysis', 'alpha'))
 
     printWithDate("main() function is end")
     return
