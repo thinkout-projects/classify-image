@@ -73,6 +73,7 @@ def main():
     if os.path.isfile('options.conf') is False:
         error.option_file_not_exist()
     options = configparser.ConfigParser()
+    options.optionxform = str  # キーをcase-sensitiveにする
     options.read('options.conf', encoding='utf-8')
     check_options(options)
 
@@ -142,42 +143,44 @@ def main():
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先にここで定義
-        for output_folder in options['NetworkUsing']:
-            # TODO: for文のoptions['NetworkUsing']対応
+        for model_name, is_use in options['NetworkUsing'].items():
+            if is_use == 'False':  # valueはstr型
+                continue
+            
             set_session(tf.Session(config=config))
 
-            folder_create(output_folder)
-            history_folder = os.path.join(output_folder, "history")
-            model_folder = os.path.join(output_folder, "model")
-            miss_folder = os.path.join(output_folder, "miss")
-            # roc_folder = os.path.join(output_folder, "roc")
-            # result_file = os.path.join(output_folder, "result.csv")
-            summary_file = os.path.join(output_folder, "summary.csv")
-            cross_file = os.path.join(output_folder, "cross.csv")
-            miss_file = os.path.join(output_folder, "miss_summary.csv")
+            folder_create(model_name)
+            history_folder = os.path.join(model_name, "history")
+            model_folder = os.path.join(model_name, "model")
+            miss_folder = os.path.join(model_name, "miss")
+            # roc_folder = os.path.join(model_name, "roc")
+            # result_file = os.path.join(model_name, "result.csv")
+            summary_file = os.path.join(model_name, "summary.csv")
+            cross_file = os.path.join(model_name, "cross.csv")
+            miss_file = os.path.join(model_name, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
             model_ch = Models([options.getint('ImageSize', 'width'),
                                options.getint('ImageSize', 'height')],
                               classes, PIC_MODE)
 
-            if output_folder == 'VGG16':
+            if model_name == 'VGG16':
                 model = model_ch.vgg16()
-            elif output_folder == 'VGG19':
+            elif model_name == 'VGG19':
                 model = model_ch.vgg19()
-            elif output_folder == 'DenseNet121':
+            elif model_name == 'DenseNet121':
                 model = model_ch.dense121()
-            elif output_folder == 'DenseNet169':
+            elif model_name == 'DenseNet169':
                 model = model_ch.dense169()
-            elif output_folder == 'DenseNet201':
+            elif model_name == 'DenseNet201':
                 model = model_ch.dense201()
-            elif output_folder == 'InceptionResNetV2':
+            elif model_name == 'InceptionResNetV2':
                 model = model_ch.inception_resnet2()
-            elif output_folder == 'InceptionV3':
+            elif model_name == 'InceptionV3':
                 model = model_ch.inception3()
-            elif output_folder == 'ResNet50':
+            elif model_name == 'ResNet50':
                 model = model_ch.resnet50()
-            elif output_folder == 'Xception':
+            elif model_name == 'Xception':
                 model = model_ch.xception()
 
             # optimizerはSGD
@@ -236,13 +239,15 @@ def main():
             sleep(1)
 
     printWithDate("output Summary Analysis")
-    for output_folder in options['NetworkUsing']:
-        # TODO: for文のoptions['NetworkUsing']対応
-        miss_folder = os.path.join(output_folder, "miss")
-        summary_file = os.path.join(output_folder, "summary.csv")
-        cross_file = os.path.join(output_folder, "cross.csv")
-        miss_file = os.path.join(output_folder, "miss_summary.csv")
-        fig_file = os.path.join(output_folder, "figure.png")
+    for model_name, is_use in options['NetworkUsing'].items():
+        if is_use == 'False':  # valueはstr型
+            continue
+
+        miss_folder = os.path.join(model_name, "miss")
+        summary_file = os.path.join(model_name, "summary.csv")
+        cross_file = os.path.join(model_name, "cross.csv")
+        miss_file = os.path.join(model_name, "miss_summary.csv")
+        fig_file = os.path.join(model_name, "figure.png")
         # miss_summary.csvを元に各種解析を行う
         # Kは不要
         miss_summarize(miss_folder, miss_file)
