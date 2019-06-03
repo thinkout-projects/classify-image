@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# エラー出力
-#
+# エラー出力に関する処理
+# 100番台 ファイルやフォルダが存在しない時
+# 200番台 オプションファイルの設定が間違っている時
+
 import sys
 
 PREFIX = "--- Error --------------------------------------------------"
@@ -16,6 +18,7 @@ def option_file_not_exist():
     '''
     print(PREFIX)
     print("options.conf is not found.")
+    print("put options.conf in root directory")
     print(SUFFIX)
 
     sys.exit(100)
