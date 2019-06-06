@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from utils import folder_create
+from .utils import folder_create
 
 
 
@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 
 # main関数
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
-from data_generator import Training
-from utils import fpath_tag_making
+from .data_generator import Training
+from .utils import fpath_tag_making
 # regression用に
 
 

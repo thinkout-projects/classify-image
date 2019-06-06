@@ -8,8 +8,8 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
-from utils import folder_create
-from utils import printWithDate
+from .utils import folder_create
+from .utils import printWithDate
 # from utils import split_array
 # import random
 
