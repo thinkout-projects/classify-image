@@ -17,7 +17,7 @@ def option_file_not_exist():
     終了コード : 100
     '''
     print(PREFIX)
-    print("options.conf is not found.")
+    print("Error Code 100: options.conf is not found.")
     print("put options.conf in root directory")
     print(SUFFIX)
 
@@ -31,7 +31,7 @@ def section_not_found(section_name):
     終了コード : 200
     '''
     print(PREFIX)
-    print(f"Section [{section_name}] is not found.")
+    print(f"Error Code 200: Section [{section_name}] is not found.")
     print(f"Add [{section_name}] in options.conf.")
     print(SUFFIX)
 
@@ -45,7 +45,7 @@ def option_not_found(section_name, option_name):
     終了コード : 201
     '''
     print(PREFIX)
-    print(f"Option [{option_name}] is not found.")
+    print(f"Error Code 201: Option [{option_name}] is not found.")
     print(f"Add [{option_name}] in section [{section_name}].")
     print(SUFFIX)
 
