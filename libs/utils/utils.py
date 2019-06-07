@@ -13,7 +13,7 @@ from keras.utils import np_utils
 
 from pytz import timezone
 from datetime import datetime
-from . import error
+from .. import error
 
 
 def printWithDate(*printee):

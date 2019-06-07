@@ -10,7 +10,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from math import sqrt
 from scipy import stats
-from .utils import folder_create, clopper_pearson
+from .utils.utils import clopper_pearson
+from .utils.folder import folder_create
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve, auc
 

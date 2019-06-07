@@ -10,7 +10,8 @@ import cv2
 import random
 import threading
 import shutil
-from .utils import folder_create, fpath_tag_making, read_img, printWithDate
+from .utils.utils import fpath_tag_making, read_img, printWithDate
+from .utils.folder import folder_create
 from keras.preprocessing.image import ImageDataGenerator
 # from keras.utils import np_utils
 from tqdm import tqdm
