@@ -4,7 +4,6 @@
 # 毎回全て書くのが面倒な雑多な処理集
 
 import os
-import shutil
 import pandas as pd
 import numpy as np
 # from scipy import stats
@@ -85,17 +84,6 @@ def check_options(Options):
     return
 
 
-def folder_create(folder):
-    if not os.path.isdir(folder):
-        os.mkdir(folder)
-    return
-
-
-def folder_delete(folder):
-    if os.path.isdir(folder):
-        shutil.rmtree(folder)
-
-
 def ID_reading(dataset_folder, idx):
     df = pd.read_csv(os.path.join(dataset_folder, "dataset" + "_"
                                   + str(idx) + "." + "csv"),
@@ -111,24 +99,6 @@ def clopper_pearson(k, n, alpha):
     lower = scipy.stats.beta.ppf(alpha2, k, n - k + 1)
     upper = scipy.stats.beta.ppf(1 - alpha2, k + 1, n - k)
     return (lower, upper)
-
-
-def folder_clean(img_root):
-    '''
-    `img_root`フォルダ中のdesktop.iniの削除
-    '''
-    folder_list = os.listdir(img_root)
-    for folder in folder_list:
-        folderpath = os.path.join(img_root, folder)
-        if folder == "desktop.ini":
-            os.remove(folderpath)
-        else:
-            file_list = os.listdir(folderpath)
-            for file in file_list:
-                if file == "desktop.ini":
-                    fpath = os.path.join(folderpath, file)
-                    os.remove(fpath)
-    return
 
 
 def split_array(ar, n_group):
