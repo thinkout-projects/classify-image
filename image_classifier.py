@@ -12,7 +12,7 @@
 import os
 import sys
 from tqdm import trange
-from utils import printWithDate
+from libs.utils.utils import printWithDate
 
 # colabとdriveの同期待ちのため
 from time import sleep
@@ -23,10 +23,10 @@ from keras.backend.tensorflow_backend import set_session
 from keras.backend.tensorflow_backend import clear_session
 
 # folder関連
-from utils import folder_create, folder_delete, folder_clean
+from libs.utils.folder import folder_create, folder_delete, folder_clean
 
 # 分割(層化k分割の交差検証)
-from k_fold_split import Split
+from libs.k_fold_split import Split
 
 # 評価用データの作成および読みこみ
 # train/00_normal/画像ファイル)
@@ -34,27 +34,27 @@ from k_fold_split import Split
 
 # モデルコンパイル
 from keras.optimizers import SGD
-from models import Models
-from utils import model_compile
+from libs.models import Models
+from libs.utils.model import model_compile
 
 # 訓練用データの作成およびデータ拡張後の読みこみ
-from data_generator import Training, Validation
+from libs.data_generator import Training, Validation
 
 # modelの定義およびコンパイル、学習、保存、学習経過のプロット
-from learning import Learning, plot_hist
+from libs.learning import Learning, plot_hist
 
 # 評価、結果の分析
-from utils import model_load, model_delete
-from auc_analysis import Miss_classify
-from auc_analysis import cross_making, miss_summarize
-from auc_analysis import (summary_analysis_binary,
-                          summary_analysis_categorical)
+from libs.utils.model import model_load, model_delete
+from libs.auc_analysis import Miss_classify
+from libs.auc_analysis import cross_making, miss_summarize
+from libs.auc_analysis import (summary_analysis_binary,
+                               summary_analysis_categorical)
 
 # configparserを使った設定ファイルの読み込み
 import configparser
-from utils import check_options
+from libs.utils.utils import check_options
 
-import error
+import libs.error as error
 
 
 def main():
@@ -133,11 +133,16 @@ def main():
                             [options.getint('ImageSize', 'width'),
                              options.getint('ImageSize', 'height')],
                             classes,
-                            options.getint('ImageDataGenerator', 'rotation_range'),
-                            options.getfloat('ImageDataGenerator', 'width_shift_range'),
-                            options.getfloat('ImageDataGenerator', 'height_shift_range'),
-                            options.getint('ImageDataGenerator', 'shear_range'),
-                            options.getfloat('ImageDataGenerator', 'zoom_range'),
+                            options.getint('ImageDataGenerator',
+                                           'rotation_range'),
+                            options.getfloat(
+                                'ImageDataGenerator', 'width_shift_range'),
+                            options.getfloat(
+                                'ImageDataGenerator', 'height_shift_range'),
+                            options.getint(
+                                'ImageDataGenerator', 'shear_range'),
+                            options.getfloat(
+                                'ImageDataGenerator', 'zoom_range'),
                             options.getint('HyperParameter', 'batch_size'))
         training.pic_df_training()
 
@@ -146,7 +151,7 @@ def main():
         for model_name, is_use in options['NetworkUsing'].items():
             if is_use == 'False':  # valueはstr型
                 continue
-            
+
             set_session(tf.Session(config=config))
 
             folder_create(model_name)
@@ -202,11 +207,16 @@ def main():
                                 [options.getint('ImageSize', 'width'),
                                     options.getint('ImageSize', 'height')],
                                 classes,
-                                options.getint('ImageDataGenerator', 'rotation_range'),
-                                options.getfloat('ImageDataGenerator', 'width_shift_range'),
-                                options.getfloat('ImageDataGenerator', 'height_shift_range'),
-                                options.getint('ImageDataGenerator', 'shear_range'),
-                                options.getfloat('ImageDataGenerator', 'zoom_range'),
+                                options.getint(
+                                    'ImageDataGenerator', 'rotation_range'),
+                                options.getfloat(
+                                    'ImageDataGenerator', 'width_shift_range'),
+                                options.getfloat(
+                                    'ImageDataGenerator', 'height_shift_range'),
+                                options.getint(
+                                    'ImageDataGenerator', 'shear_range'),
+                                options.getfloat(
+                                    'ImageDataGenerator', 'zoom_range'),
                                 options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model,
                                 X_val, y_val,
@@ -251,7 +261,8 @@ def main():
         # miss_summary.csvを元に各種解析を行う
         # Kは不要
         miss_summarize(miss_folder, miss_file)
-        cross_making(miss_folder, options.getint('Validation', 'k'), cross_file)
+        cross_making(miss_folder, options.getint(
+            'Validation', 'k'), cross_file)
         if PIC_MODE == 0:
             summary_analysis_binary(miss_file, summary_file, fig_file,
                                     options['FolderName']['dataset'],

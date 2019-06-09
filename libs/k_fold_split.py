@@ -4,14 +4,11 @@
 # 層化k分割の交差検証
 
 import os
-# import sys
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
-from utils import folder_create
-from utils import printWithDate
-# from utils import split_array
-# import random
+from .utils.folder import folder_create
+from .utils.utils import printWithDate
 
 
 class Split:

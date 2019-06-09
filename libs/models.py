@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # VGG16のネットワーク系
 from keras.models import Sequential, Model
 
@@ -12,6 +15,7 @@ from keras.applications.xception import Xception
 from keras.applications.inception_v3 import InceptionV3
 from keras.applications.densenet import DenseNet201, DenseNet169, DenseNet121
 from keras.applications.resnet50 import ResNet50
+
 
 class Models(object):
     '''

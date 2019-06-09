@@ -9,7 +9,7 @@
 import os
 import sys
 from tqdm import trange
-from utils import printWithDate
+from libs.utils.utils import printWithDate
 
 # colabとdriveの同期待ちのため
 from time import sleep
@@ -20,10 +20,10 @@ from keras.backend.tensorflow_backend import set_session
 from keras.backend.tensorflow_backend import clear_session
 
 # folder関連
-from utils import folder_create, folder_delete, folder_clean
+from libs.utils.folder import folder_create, folder_delete, folder_clean
 
 # 分割(層化k分割の交差検証)
-from k_fold_split import Split
+from libs.k_fold_split import Split
 
 # 評価用データの作成および読みこみ
 # train/00_normal/画像ファイル)
@@ -31,26 +31,26 @@ from k_fold_split import Split
 
 # モデルコンパイル
 from keras.optimizers import Adam
-from models import Models
-from utils import model_compile
+from libs.models import Models
+from libs.utils.model import model_compile
 
 # 訓練用データの作成およびデータ拡張後の読みこみ
-from data_generator import Training, Validation
+from libs.data_generator import Training, Validation
 
 # modelの定義およびコンパイル、学習、保存、学習経過のプロット
-from learning import Learning, plot_hist
+from libs.learning import Learning, plot_hist
 
 # 評価、結果の分析
-from utils import model_load, model_delete
-from auc_analysis import Miss_regression
-from auc_analysis import miss_summarize
-from auc_analysis import summary_analysis_regression
+from libs.utils.model import model_load, model_delete
+from libs.auc_analysis import Miss_regression
+from libs.auc_analysis import miss_summarize
+from libs.auc_analysis import summary_analysis_regression
 
 # configparserを使った設定ファイルの読み込み
 import configparser
-from utils import check_options
+from libs.utils.utils import check_options
 
-import error
+import libs.error as error
 
 PIC_MODE = 2
 
