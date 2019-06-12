@@ -111,9 +111,7 @@ def main():
         printWithDate("making data for validation",
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
         validation = Validation(image_size,
-                                options['FolderName']['dataset'],
-                                options['FolderName']['split_info'],
-                                options['FolderName']['test'],
+                                options['FolderName'],
                                 classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
@@ -121,9 +119,7 @@ def main():
         # 訓練用データについて
         printWithDate("making data for training",
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
-        training = Training(options['FolderName']['dataset'],
-                            options['FolderName']['split_info'],
-                            options['FolderName']['train'], idx, PIC_MODE,
+        training = Training(options['FolderName'], idx, PIC_MODE,
                             train_num_mode_dic,
                             image_size, classes,
                             options['ImageDataGenerator'],
@@ -177,9 +173,7 @@ def main():
 
             # modelをcompileする。
             model_compile(model, loss, optimizer)
-            learning = Learning(options['FolderName']['dataset'],
-                                options['FolderName']['split_info'],
-                                options['FolderName']['train'], idx, PIC_MODE,
+            learning = Learning(options['FolderName'], idx, PIC_MODE,
                                 train_num_mode_dic,
                                 image_size, classes,
                                 options['ImageDataGenerator'],
