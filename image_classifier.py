@@ -133,16 +133,7 @@ def main():
                             [options.getint('ImageSize', 'width'),
                              options.getint('ImageSize', 'height')],
                             classes,
-                            options.getint('ImageDataGenerator',
-                                           'rotation_range'),
-                            options.getfloat(
-                                'ImageDataGenerator', 'width_shift_range'),
-                            options.getfloat(
-                                'ImageDataGenerator', 'height_shift_range'),
-                            options.getint(
-                                'ImageDataGenerator', 'shear_range'),
-                            options.getfloat(
-                                'ImageDataGenerator', 'zoom_range'),
+                            options['ImageDataGenerator'],
                             options.getint('HyperParameter', 'batch_size'))
         training.pic_df_training()
 
@@ -207,16 +198,7 @@ def main():
                                 [options.getint('ImageSize', 'width'),
                                     options.getint('ImageSize', 'height')],
                                 classes,
-                                options.getint(
-                                    'ImageDataGenerator', 'rotation_range'),
-                                options.getfloat(
-                                    'ImageDataGenerator', 'width_shift_range'),
-                                options.getfloat(
-                                    'ImageDataGenerator', 'height_shift_range'),
-                                options.getint(
-                                    'ImageDataGenerator', 'shear_range'),
-                                options.getfloat(
-                                    'ImageDataGenerator', 'zoom_range'),
+                                options['ImageDataGenerator'],
                                 options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model,
                                 X_val, y_val,
