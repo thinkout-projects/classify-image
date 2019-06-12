@@ -75,6 +75,10 @@ def main():
     options.read('options.conf', encoding='utf-8')
     check_options(options)
 
+    # 変数の整形
+    image_size = [options.getint('ImageSize', 'width'),
+                  options.getint('ImageSize', 'height')]
+
     # desktop.iniの削除
     folder_clean(options['FolderName']['dataset'])
 
@@ -106,8 +110,7 @@ def main():
         # 評価用データについて
         printWithDate("making data for validation",
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
-        validation = Validation([options.getint('ImageSize', 'width'),
-                                 options.getint('ImageSize', 'height')],
+        validation = Validation(image_size,
                                 options['FolderName']['dataset'],
                                 options['FolderName']['test'],
                                 options['FolderName']['split_info'],
@@ -122,9 +125,7 @@ def main():
                             options['FolderName']['split_info'],
                             options['FolderName']['train'], idx, PIC_MODE,
                             train_num_mode_dic,
-                            [options.getint('ImageSize', 'width'),
-                             options.getint('ImageSize', 'height')],
-                            classes,
+                            image_size, classes,
                             options['ImageDataGenerator'],
                             options.getint('HyperParameter', 'batch_size'))
         training.pic_df_training()
@@ -147,9 +148,7 @@ def main():
             miss_file = os.path.join(model_name, "miss_summary.csv")
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
-            model_ch = Models([options.getint('ImageSize', 'width'),
-                               options.getint('ImageSize', 'height')],
-                              classes, PIC_MODE)
+            model_ch = Models(image_size, classes, PIC_MODE)
 
             if model_name == 'VGG16':
                 model = model_ch.vgg16()
@@ -182,13 +181,10 @@ def main():
                                 options['FolderName']['split_info'],
                                 options['FolderName']['train'], idx, PIC_MODE,
                                 train_num_mode_dic,
-                                [options.getint('ImageSize', 'width'),
-                                    options.getint('ImageSize', 'height')],
-                                classes,
+                                image_size, classes,
                                 options['ImageDataGenerator'],
                                 options.getint('HyperParameter', 'batch_size'),
-                                model_folder, model,
-                                X_val, y_val,
+                                model_folder, model, X_val, y_val,
                                 options.getint('HyperParameter', 'epochs'))
 
             # 訓練実行
