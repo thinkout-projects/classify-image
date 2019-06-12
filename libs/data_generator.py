@@ -165,7 +165,7 @@ class Validation(object):
     評価用データの作成および読み込みのクラス
     '''
 
-    def __init__(self, size, source_folder, test_root, dataset_folder,
+    def __init__(self, size, source_folder, dataset_folder, test_root,
                  classes, pic_mode, idx):
         self.source_folder = source_folder
         self.test_root = test_root

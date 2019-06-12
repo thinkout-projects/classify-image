@@ -120,8 +120,8 @@ def main():
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
         validation = Validation(image_size,
                                 options['FolderName']['dataset'],
-                                options['FolderName']['test'],
                                 options['FolderName']['split_info'],
+                                options['FolderName']['test'],
                                 classes, PIC_MODE, idx)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
