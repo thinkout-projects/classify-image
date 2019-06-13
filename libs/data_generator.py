@@ -64,11 +64,11 @@ class Training(object):
         self.h = self.size[0]
         self.w = self.size[1]
         self.classes = classes
-        self.rotation_range = (int)(args_of_IDG['rotation_range'])
-        self.width_shift_range = (float)(args_of_IDG['width_shift_range'])
-        self.height_shift_range = (float)(args_of_IDG['height_shift_range'])
-        self.shear_range = (int)(args_of_IDG['shear_range'])
-        self.zoom_range = (float)(args_of_IDG['zoom_range'])
+        self.rotation_range = int(args_of_IDG['rotation_range'])
+        self.width_shift_range = float(args_of_IDG['width_shift_range'])
+        self.height_shift_range = float(args_of_IDG['height_shift_range'])
+        self.shear_range = int(args_of_IDG['shear_range'])
+        self.zoom_range = float(args_of_IDG['zoom_range'])
         self.BATCH_SIZE = BATCH_SIZE
 
     def pic_df_training(self):
