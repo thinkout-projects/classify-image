@@ -52,25 +52,23 @@ def threadsafe_generator(f):
 
 
 class Training(object):
-    def __init__(self, source_folder, dataset_folder, train_root, idx,
-                 pic_mode, train_num_mode_dic, size, classes, rotation_range,
-                 width_shift_range, height_shift_range, shear_range,
-                 zoom_range, BATCH_SIZE):
-        self.source_folder = source_folder
-        self.train_root = train_root
+    def __init__(self, folder_names, idx,
+                 pic_mode, train_num_mode_dic, size, classes, args_of_IDG, BATCH_SIZE):
+        self.source_folder = folder_names['dataset']
+        self.dataset_folder = folder_names['split_info']
+        self.train_root = folder_names['train']
         self.idx = idx
         self.pic_mode = pic_mode
-        self.dataset_folder = dataset_folder
         self.train_num_mode_dic = train_num_mode_dic
         self.size = size
         self.h = self.size[0]
         self.w = self.size[1]
         self.classes = classes
-        self.rotation_range = rotation_range
-        self.width_shift_range = width_shift_range
-        self.height_shift_range = height_shift_range
-        self.shear_range = shear_range
-        self.zoom_range = zoom_range
+        self.rotation_range = int(args_of_IDG['rotation_range'])
+        self.width_shift_range = float(args_of_IDG['width_shift_range'])
+        self.height_shift_range = float(args_of_IDG['height_shift_range'])
+        self.shear_range = int(args_of_IDG['shear_range'])
+        self.zoom_range = float(args_of_IDG['zoom_range'])
         self.BATCH_SIZE = BATCH_SIZE
 
     def pic_df_training(self):
@@ -167,11 +165,10 @@ class Validation(object):
     評価用データの作成および読み込みのクラス
     '''
 
-    def __init__(self, size, source_folder, test_root, dataset_folder,
-                 classes, pic_mode, idx):
-        self.source_folder = source_folder
-        self.test_root = test_root
-        self.dataset_folder = dataset_folder
+    def __init__(self, size, folder_names, classes, pic_mode, idx):
+        self.source_folder = folder_names['dataset']
+        self.dataset_folder = folder_names['split_info']
+        self.test_root = folder_names['test']
         self.idx = idx
         self.pic_mode = pic_mode
         self.classes = classes

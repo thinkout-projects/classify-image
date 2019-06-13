@@ -19,15 +19,12 @@ class Learning(Training):
     Trainingのクラスをスーパークラスとして、サブクラスである学習クラスを作成
     '''
 
-    def __init__(self, source_folder, dataset_folder, train_root, idx,
-                 pic_mode, train_num_mode_dic, size, classes, rotation_range,
-                 width_shift_range, height_shift_range, shear_range,
-                 zoom_range, BATCH_SIZE, model_folder, model,
+    def __init__(self, folder_names, idx,
+                 pic_mode, train_num_mode_dic, size, classes, args_of_IDG, BATCH_SIZE, model_folder, model,
                  X_val, y_val, epochs):
-        super().__init__(source_folder, dataset_folder, train_root, idx,
+        super().__init__(folder_names, idx,
                          pic_mode, train_num_mode_dic, size, classes,
-                         rotation_range, width_shift_range, height_shift_range,
-                         shear_range, zoom_range, BATCH_SIZE)
+                         args_of_IDG, BATCH_SIZE)
         self.model_folder = model_folder
         self.model = model
         self.pic_mode = pic_mode
