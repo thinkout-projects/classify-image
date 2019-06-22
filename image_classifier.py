@@ -23,7 +23,7 @@ from keras.backend.tensorflow_backend import set_session
 from keras.backend.tensorflow_backend import clear_session
 
 # folder関連
-from libs.utils.folder import folder_create, folder_delete, folder_clean
+from libs.utils.folder import folder_create, folder_delete
 
 # 分割(層化k分割の交差検証)
 from libs.k_fold_split import k_fold_split
@@ -83,9 +83,6 @@ def main():
     # 変数の整形
     image_size = [options.getint('ImageSize', 'width'),
                   options.getint('ImageSize', 'height')]
-
-    # desktop.iniの削除
-    folder_clean(options['FolderName']['dataset'])
 
     # 設定ファイルで指定したcsvファイルを読み込み
     df = pd.read_csv(options['CSV']['csv_filename'])
