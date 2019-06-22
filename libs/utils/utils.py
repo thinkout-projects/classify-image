@@ -156,6 +156,9 @@ def num_count(root):
 
 
 def read_img(fpath, h, w):
+    '''
+    fpathのファイルをh x wのサイズにリサイズし、numpy配列(float32)にしたものを返す
+    '''
     X = np.array(
         cv2.resize(cv2.imread(fpath), (h, w)) / 255.0,
         dtype=np.float32)
