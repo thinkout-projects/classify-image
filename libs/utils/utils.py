@@ -129,7 +129,9 @@ def fpath_tag_making(root, classes):
 
     # train
     seed = 1
-    folder_list = os.listdir(root)
+    file_folder_list = os.listdir(root)
+    folder_list = [f for f in file_folder_list
+                   if os.path.isdir(os.path.join(root, f))]
     fpath_list = []
     tag_list = []
     # train/00_tgt

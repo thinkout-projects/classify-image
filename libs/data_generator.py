@@ -93,8 +93,7 @@ class Training(object):
                 # 画像ごとに
                 for train_file in train_list:
                     # img/00_normal/画像
-                    img_path = os.path.join(self.source_folder, column,
-                                            train_file)
+                    img_path = os.path.join(self.source_folder, train_file)
                     src0 = cv2.imread(img_path)
                     file_without = train_file.split(".")[0]
 
@@ -200,7 +199,7 @@ class Validation(object):
                 for test_file in test_list:
                     # img/ 00_normal/ filename
                     img_path = os.path.join(
-                        self.source_folder, column, test_file)
+                        self.source_folder, test_file)
                     # test/00_normal/filename
                     new_path = os.path.join(test_folder, test_file)
                     shutil.copy(img_path, new_path)
