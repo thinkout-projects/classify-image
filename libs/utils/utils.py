@@ -34,6 +34,7 @@ def check_options(Options):
     options.confが想定通りのフォーマットになっているかチェックする
     '''
     SECTIONS = ['FolderName',
+                'CSV',
                 'NetworkUsing',
                 'ImageSize',
                 'HyperParameter',
@@ -47,6 +48,11 @@ def check_options(Options):
                 'split_info',
                 'train',
                 'test'],
+               ['csv_filename',
+                'image_filename_column',
+                'ID_column',
+                'label_column',
+                'ignore_ID'],
                ['VGG16',
                 'VGG19',
                 'DenseNet121',

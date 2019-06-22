@@ -9,20 +9,19 @@ import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 from .utils.folder import folder_create
 from .utils.utils import printWithDate
-from .data_generator import define_data_aug
 
 
 class Split:
     def __init__(self, k, csv_config, split_info_folder, df, classes):
         '''
-        コンストラクタ、分割数、元フォルダ、出力先のデータセットフォルダを
+        コンストラクタ、引数からメンバを作成
         '''
 
         self.k = k
         self.simple = csv_config['csv_simple_split']
-        self.filename_column = csv_config["csv_column_filename"]
-        self.label_column = csv_config["csv_column_label"]
-        self.id_column = csv_config["csv_column_ID"]
+        self.filename_column = csv_config["image_filename_column"]
+        self.label_column = csv_config["label_column"]
+        self.id_column = csv_config["ID_column"]
         self.split_info_folder = split_info_folder
         self.random_seed = 1
         self.df = df.sort_values(self.id_column)  # この時点でid順にソートして扱う
@@ -30,8 +29,9 @@ class Split:
 
     def k_fold_split(self):
         '''
-        分割情報をcsvで保存する用フォルダ simpleがTrueならIDを考慮して分割
+        実際にk_fold_splitを行い、分割情報をcsvに保存する
         '''
+        # 分割情報が書かれたcsvを保存するフォルダ
         folder_create(self.split_info_folder)
 
         # Xはfilename, yはgradeのリスト
@@ -42,7 +42,7 @@ class Split:
         X_unique = []
         y_unique = []
         printWithDate("spliting - loop 1/3")
-        for i,candid in enumerate(id_from_df):
+        for i, candid in enumerate(id_from_df):
             if((candid in X_unique) is False):
                 X_unique.append(candid)
                 y_unique.append(y[i])
@@ -50,6 +50,7 @@ class Split:
         # shuffleする、リストにスプリット順に、保存されていく。
         skf = StratifiedKFold(n_splits=self.k, shuffle=True,
                               random_state=self.random_seed)
+
         train_list = []
         test_list = []
         # 患者IDのみでデータ分割

@@ -89,14 +89,9 @@ def main():
 
     # 設定ファイルで指定したcsvファイルを読み込み
     df = pd.read_csv(options['CSV']['csv_filename'])
-    # 設定ファイルでk-foldのときに個人IDを区別しないと指定されたとき、
-    # filename列を複製して個人ID列を追加
-    if options['etc']['distinguishUniqueID'] == False:
-        df[options['CSV']['csv_column_ID']]\
-            = df[options['CSV']['csv_column_filename']].split('.')[0]
 
     # 分類数を調べる。
-    class_list = df[options['CSV']['csv_column_label']].unique().tolist()
+    class_list = df[options['CSV']['label_column']].unique().tolist()
     classes = len(class_list)
     printWithDate(f'{classes} classes found')
 
@@ -118,7 +113,7 @@ def main():
     split = Split(options.getint('Validation', 'k'),
                   options['CSV'],
                   options['FolderName']['split_info'],
-                  df, classes, train_num_mode_dic)
+                  df, classes)
 
     # 各列が各Splitに対応しているファイル名が列挙されたデータフレーム
     df_train, df_test = split.k_fold_split()
