@@ -88,17 +88,17 @@ def main():
     # 設定ファイルで指定したcsvファイルを読み込み
     df = pd.read_csv(options['CSV']['csv_filename'])
 
-    # 分類数を調べる。
-    class_list = df[options['CSV']['label_column']].unique().tolist()
-    classes = len(class_list)
+    # 分類ラベルをリスト化し、リストの長さを調べて分類数とする
+    label_list = df[options['CSV']['label_column']].unique().tolist()
+    classes = len(label_list)
     printWithDate(f'{classes} classes found')
 
     # ここで、データ拡張の方法を指定。
     train_num_mode_dic = {}
     # gradeごとにデータ拡張の方法を変える場合はここを変更
-    for class_name in class_list:
-        train_num_mode_dic[class_name] = [options.getint('DataGenerate', 'num_of_augs'),
-                                          options.getboolean('DataGenerate', 'use_flip')]
+    for label in label_list:
+        train_num_mode_dic[label] = [options.getint('DataGenerate', 'num_of_augs'),
+                                     options.getboolean('DataGenerate', 'use_flip')]
 
     # 分割
     printWithDate("spliting dataset")
@@ -108,7 +108,10 @@ def main():
                   df, classes)
 
     # 各列が各Splitに対応しているファイル名が列挙されたデータフレーム
-    df_train, df_test = split.k_fold_split()
+    if options['CSV']['label_column'] == "":
+        split.k_fold_split_simple()
+    else:
+        split.k_fold_split()
 
     # 分割ごとに
     for idx in range(options.getint('Validation', 'k')):
