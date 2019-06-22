@@ -23,7 +23,7 @@ from keras.backend.tensorflow_backend import clear_session
 from libs.utils.folder import folder_create, folder_delete, folder_clean
 
 # 分割(層化k分割の交差検証)
-from libs.k_fold_split import Split
+from libs.k_fold_split import k_fold_split
 
 # 評価用データの作成および読みこみ
 # train/00_normal/画像ファイル)
@@ -100,18 +100,17 @@ def main():
         train_num_mode_dic[label] = [options.getint('DataGenerate', 'num_of_augs'),
                                      options.getboolean('DataGenerate', 'use_flip')]
 
-    # 分割
+    # 層化k分割
     printWithDate("spliting dataset")
-    split = Split(options.getint('Validation', 'k'),
-                  options['CSV'],
-                  options['FolderName']['split_info'],
-                  df, classes)
-
-    # 各列が各Splitに対応しているファイル名が列挙されたデータフレーム
-    if options['CSV']['label_column'] == "":
-        split.k_fold_split_simple()
+    if options['CSV']['ID_column'] == "":
+        hasID = False
     else:
-        split.k_fold_split()
+        hasID = True
+
+    k_fold_split(options.getint('Validation', 'k'),
+                 options['CSV'],
+                 options['FolderName']['split_info'],
+                 df, classes, hasID)
 
     # 分割ごとに
     for idx in range(options.getint('Validation', 'k')):
