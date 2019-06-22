@@ -86,8 +86,8 @@ def k_fold_split(k, csv_config, split_info_folder, df, classes, hasID):
             df_test = pd.concat([df_test, pd.DataFrame(
                 ds_test, columns=[label])], axis=1)
 
-        df_train.to_csv(f"split_info_folder/train_{str(idx)}.csv",
+        df_train.to_csv(f"{split_info_folder}/train_{str(idx)}.csv",
                         index=False, encoding="utf-8")
-        df_test.to_csv(f"split_info_folder/test_{str(idx)}.csv",
+        df_test.to_csv(f"{split_info_folder}/test_{str(idx)}.csv",
                        index=False, encoding="utf-8")
     return
