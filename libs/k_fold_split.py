@@ -20,9 +20,9 @@ def k_fold_split(k, csv_config, split_info_folder, df, classes, hasID):
 
     # ID列がない場合はファイル名列をID列として扱う
     if hasID:
-        id_column = filename_column
-    else:
         id_column = csv_config["ID_column"]
+    else:
+        id_column = filename_column
 
     # ID_uniqueは個人ID, y_uniqueは分類ラベルのリスト
     # 個人IDと分類ラベルは対応し、ID_uniqueは一意である
@@ -41,13 +41,20 @@ def k_fold_split(k, csv_config, split_info_folder, df, classes, hasID):
                           random_state=random_seed)
     filelist_for_train = []
     filelist_for_test = []
-    for (i, (ID_for_train, ID_for_test)) in enumerate(skf.split(ID_unique_list,
-                                                                y_unique_list)):
+    for (i, (train_index, test_index)) in enumerate(skf.split(ID_unique_list,
+                                                              y_unique_list)):
+        IDs_for_train = []
+        IDs_for_test = []
+        for id_index in train_index:
+            IDs_for_train.append(ID_unique_list[id_index])
+        for id_index in test_index:
+            IDs_for_test.append(ID_unique_list[id_index])
+
         # 分類ラベルをkey、ファイル名のリストをvalueとした辞書
         label_filelist4Train_dic = {label: [] for label in y_unique_list}
         label_filelist4Test_dic = {label: [] for label in y_unique_list}
 
-        for ID in ID_for_train:
+        for ID in IDs_for_train:
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
@@ -55,7 +62,7 @@ def k_fold_split(k, csv_config, split_info_folder, df, classes, hasID):
             for filename, label in zip(filename_list, label_list):
                 label_filelist4Train_dic[label].append(filename)
 
-        for ID in ID_for_test:
+        for ID in IDs_for_test:
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
