@@ -244,11 +244,11 @@ def main():
             'Validation', 'k'), cross_file)
         if PIC_MODE == 0:
             summary_analysis_binary(miss_file, summary_file, fig_file,
-                                    options['FolderName']['dataset'],
+                                    label_list,
                                     options.getfloat('Analysis', 'alpha'))
         elif PIC_MODE == 1:
             summary_analysis_categorical(miss_file, summary_file,
-                                         options['FolderName']['dataset'],
+                                         label_list,
                                          options.getfloat('Analysis', 'alpha'))
 
     printWithDate("main() function is end")

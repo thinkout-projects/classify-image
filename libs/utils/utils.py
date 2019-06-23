@@ -138,8 +138,8 @@ def fpath_tag_making(root, classes):
     for i, folder in enumerate(folder_list):
         folder_path = os.path.join(root, folder)
         file_list = os.listdir(folder_path)
-        for file in file_list:
-            fpath = os.path.join(folder_path, file)
+        for file_ in file_list:
+            fpath = os.path.join(folder_path, file_)
             fpath_list.append(fpath)
             tag_list.append(i)
     fpath_list, tag_list = list_shuffle(fpath_list, tag_list, seed)

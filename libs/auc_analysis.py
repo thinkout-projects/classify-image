@@ -146,14 +146,16 @@ def miss_summarize(miss_folder, miss_file):
 
 
 def summary_analysis_binary(miss_summary_file, summary_file, roc_fig,
-                            img_folder, alpha):
+                            label_list, alpha):
     df = pd.read_csv(miss_summary_file, encoding="utf-8")
     df0 = df[df["true"] == 0]
     df1 = df[df["true"] == 1]
     n_normal = len(df0)
     n_des = len(df1)
-    y_pred = np.array(df[os.listdir(img_folder)[1]])
+
+    # y_true, y_predはsklearn.metrics.roc_auc_scoreのy_true, y_scoreに渡される
     y_true = np.array(df["true"])
+    y_pred = np.array(df[label_list[1]])
 
     # AUCについて
     # y_pred, y_trueを用いて95%信頼区間を求める
@@ -223,12 +225,11 @@ def roc_auc_ci(y_true, y_score, alpha, positive=1):
     return [AUC, lower, upper]
 
 
-def summary_analysis_categorical(miss_summary_file, summary_file, img_folder,
+def summary_analysis_categorical(miss_summary_file, summary_file, label_list,
                                  alpha):
     df = pd.read_csv(miss_summary_file, encoding="utf-8")
-    cols = os.listdir(img_folder)
     df_out = pd.DataFrame()
-    for i, col in enumerate(cols):
+    for i, label in enumerate(label_list):
         df0 = df[df["true"] == i]
         n_0 = len(df0)
         df00 = df0[df0["predict"] == i]
@@ -236,9 +237,9 @@ def summary_analysis_categorical(miss_summary_file, summary_file, img_folder,
         accuracy = float(k_0/n_0)
         accuracy_low, accuracy_up = clopper_pearson(k_0, n_0, alpha)
         accuracies = [accuracy, accuracy_low, accuracy_up]
-        print(col)
+        print(label)
         print(accuracies)
-        df_out[col] = accuracies
+        df_out[label] = accuracies
     df_out.to_csv(summary_file, index=False, encoding="utf-8")
     return
 
