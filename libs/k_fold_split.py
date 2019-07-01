@@ -77,6 +77,9 @@ def k_fold_split(k, csv_config, split_info_folder, df, classes, hasID):
     folder_create(split_info_folder)
     unique_label_list = df[label_column].unique().tolist()
 
+    df_train_list = []
+    df_test_list = []
+
     # スプリット順にcsvに出力
     for idx in range(k):
         df_train = pd.DataFrame()
@@ -97,4 +100,8 @@ def k_fold_split(k, csv_config, split_info_folder, df, classes, hasID):
                         index=False, encoding="utf-8")
         df_test.to_csv(f"{split_info_folder}/test_{str(idx)}.csv",
                        index=False, encoding="utf-8")
-    return
+
+        df_train_list.append(df_train)
+        df_test_list.append(df_test)
+
+    return df_train_list, df_test_list

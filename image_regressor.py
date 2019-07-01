@@ -104,11 +104,11 @@ def main():
     else:
         hasID = True
 
-    k_fold_split(options.getint('Validation', 'k'),
-                 options['CSV'],
-                 options['FolderName']['split_info'],
-                 df, classes, hasID)
-
+    df_train_list, df_test_list = \
+        k_fold_split(options.getint('Validation', 'k'),
+                     options['CSV'],
+                     options['FolderName']['split_info'],
+                     df, classes, hasID)
     # 分割ごとに
     for idx in range(options.getint('Validation', 'k')):
         printWithDate("processing sprited dataset",
@@ -119,7 +119,7 @@ def main():
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
         validation = Validation(image_size,
                                 options['FolderName'],
-                                classes, PIC_MODE, idx)
+                                classes, PIC_MODE, idx, df_test_list[idx])
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
@@ -130,7 +130,8 @@ def main():
                             train_num_mode_dic,
                             image_size, classes,
                             options['ImageDataGenerator'],
-                            options.getint('HyperParameter', 'batch_size'))
+                            options.getint('HyperParameter', 'batch_size'),
+                            df_train_list[idx])
         training.pic_df_training()
 
         # model定義
