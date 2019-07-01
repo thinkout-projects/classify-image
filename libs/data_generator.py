@@ -138,12 +138,14 @@ class Training(object):
             X_train.append(X)
             # 回帰の場合はファイル名冒頭からターゲットを読み込む
             if(self.pic_mode == 2):
+                # TODO: csv対応
                 y_train.append(int(fpath.split("\\")[-1].split("_")[2]))
         X_train = np.array(X_train)
         X_train = Training.data_gen(self, X_train)
         if(self.pic_mode != 2):
             y_train = tag_array[i: i + self.BATCH_SIZE]
         else:
+            # TODO: csv対応
             y_train = np.array(y_train)
         return X_train, y_train
 
@@ -218,6 +220,7 @@ class Validation(object):
             X = read_img(fpath, self.h, self.w)
             X_val.append(X)
             if(self.pic_mode == 2):
+                # TODO: csv対応
                 y_val.append(int(fpath.split("\\")[-1].split("_")[0]))
 
         # 全てを再度array化する
@@ -231,6 +234,7 @@ class Validation(object):
         if(self.pic_mode != 2):
             return (X_val, tag_array, fpath_list)
         else:
+            # TODO: csv対応
             return (X_val, y_val, fpath_list)
 
 
