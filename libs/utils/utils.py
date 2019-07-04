@@ -89,8 +89,7 @@ def check_options(Options):
 
 
 def ID_reading(dataset_folder, idx):
-    df = pd.read_csv(os.path.join(dataset_folder, "dataset" + "_"
-                                  + str(idx) + "." + "csv"),
+    df = pd.read_csv(os.path.join(dataset_folder, f"dataset_{idx}.csv"),
                      encoding="utf-8")
     # ファイル名一覧
     train_list = df["train"].dropna()

@@ -42,8 +42,7 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
                           random_state=RANDOM_SEED)
     filelist_for_train = []
     filelist_for_test = []
-    for (i, (train_index, test_index)) in enumerate(skf.split(ID_unique_list,
-                                                              y_unique_list)):
+    for (train_index, test_index) in skf.split(ID_unique_list, y_unique_list):
         IDs_for_train = []
         IDs_for_test = []
         for id_index in train_index:
@@ -89,17 +88,19 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
         for label in unique_label_list:
             train_name = filelist_for_train[idx][label]
             ds_train = pd.Series(train_name)
-            df_train = pd.concat([df_train, pd.DataFrame(
-                ds_train, columns=[label])], axis=1)
+            df_train = pd.concat([df_train,
+                                  pd.DataFrame(ds_train, columns=[label])],
+                                 axis=1)
 
             test_name = filelist_for_test[idx][label]
             ds_test = pd.Series(test_name)
-            df_test = pd.concat([df_test, pd.DataFrame(
-                ds_test, columns=[label])], axis=1)
+            df_test = pd.concat([df_test,
+                                 pd.DataFrame(ds_test, columns=[label])],
+                                axis=1)
 
-        df_train.to_csv(f"{split_info_folder}/train_{str(idx)}.csv",
+        df_train.to_csv(f"{split_info_folder}/train_{idx}.csv",
                         index=False, encoding="utf-8")
-        df_test.to_csv(f"{split_info_folder}/test_{str(idx)}.csv",
+        df_test.to_csv(f"{split_info_folder}/test_{idx}.csv",
                        index=False, encoding="utf-8")
 
         df_train_list.append(df_train)
@@ -182,9 +183,9 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
         ds_test = pd.Series(test_name)
         df_test = pd.concat([df_test, pd.DataFrame(ds_test)], axis=1)
 
-        df_train.to_csv(f"{split_info_folder}/train_{str(idx)}.csv",
+        df_train.to_csv(f"{split_info_folder}/train_{idx}.csv",
                         index=False, encoding="utf-8")
-        df_test.to_csv(f"{split_info_folder}/test_{str(idx)}.csv",
+        df_test.to_csv(f"{split_info_folder}/test_{idx}.csv",
                        index=False, encoding="utf-8")
 
         df_train_list.append(df_train)

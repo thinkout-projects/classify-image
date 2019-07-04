@@ -91,8 +91,9 @@ def main():
     printWithDate(f'{classes} classes found')
 
     # ここで、データ拡張の方法を指定。
+    # TODO: 回帰の目標値によって増強方法を変更出来るようにする
+    #       例) 視力0.0〜0.8は[6,1]、視力0.8〜は[3,1]
     train_num_mode_dic = {}
-    # gradeごとにデータ拡張の方法を変える場合はここを変更
     for label in label_list:
         train_num_mode_dic[label] = [options.getint('DataGenerate', 'num_of_augs'),
                                      options.getboolean('DataGenerate', 'use_flip')]
