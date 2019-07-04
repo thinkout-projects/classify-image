@@ -4,7 +4,6 @@
 # 訓練用データ(= trainフォルダ)の準備
 
 import os
-import pandas as pd
 import numpy as np
 import cv2
 import random
@@ -53,7 +52,8 @@ def threadsafe_generator(f):
 
 class Training(object):
     def __init__(self, folder_names, idx,
-                 pic_mode, train_num_mode_dic, size, classes, args_of_IDG, BATCH_SIZE, df_train):
+                 pic_mode, train_num_mode_dic, size, classes, args_of_IDG,
+                 BATCH_SIZE, df_train):
         self.source_folder = folder_names['dataset']
         self.train_root = folder_names['train']
         self.idx = idx
@@ -80,12 +80,12 @@ class Training(object):
         folder_create(self.train_root)
         for column in columns:
             # train/00_normal作成
-            train_folder = os.path.join(self.train_root, column)
+            train_folder = os.path.join(self.train_root, str(column))
             folder_create(train_folder)
             train_list = self.df_train[column].dropna()
 
             with tqdm(total=len(train_list),
-                      desc='for ' + column, leave=True) as pbar:
+                      desc=f'for {column}', leave=True) as pbar:
                 # 画像ごとに
                 for train_file in train_list:
                     # img/00_normal/画像
@@ -184,12 +184,12 @@ class Validation(object):
         folder_create(self.test_root)
         for column in columns:
             # test/00_Normal作成
-            test_folder = os.path.join(self.test_root, column)
+            test_folder = os.path.join(self.test_root, str(column))
             folder_create(test_folder)
             test_list = self.df_test[column].dropna()
 
             with tqdm(total=len(test_list),
-                      desc='for ' + column, leave=True) as pbar:
+                      desc=f'for {column}', leave=True) as pbar:
                 for test_file in test_list:
                     # img/ 00_normal/ filename
                     img_path = os.path.join(
@@ -245,7 +245,7 @@ def data_augment(newfolder, file, src0, num_list, mode):
     for num in num_list:
         if mode == 0:
             dst0 = data.convert(src0, num)
-            newfile0 = str(num) + "_" + file + ".jpg"
+            newfile0 = f"{num}_{file}.jpg"
             newfpath0 = os.path.join(newfolder, newfile0)
             # 全ての画像に同じ処理をしたい場合はここに！マスキングなど
             cv2.imwrite(newfpath0, dst0)
@@ -253,8 +253,8 @@ def data_augment(newfolder, file, src0, num_list, mode):
             src1 = data.lr_flip_func(src0)
             dst0 = data.convert(src0, num)
             dst1 = data.convert(src1, num)
-            newfile0 = "0" + "_" + str(num) + "_" + file + ".jpg"
-            newfile1 = "1" + "_" + str(num) + "_" + file + ".jpg"
+            newfile0 = f"0_{num}_{file}.jpg"
+            newfile1 = f"1_{num}_{file}.jpg"
             newfpath0 = os.path.join(newfolder, newfile0)
             newfpath1 = os.path.join(newfolder, newfile1)
             cv2.imwrite(newfpath0, dst0)
