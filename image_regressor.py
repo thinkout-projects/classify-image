@@ -107,7 +107,7 @@ def main():
     k_fold_split(options.getint('Validation', 'k'),
                  options['CSV'],
                  options['FolderName']['split_info'],
-                 df, classes, hasID)
+                 df, hasID)
 
     # 分割ごとに
     for idx in range(options.getint('Validation', 'k')):

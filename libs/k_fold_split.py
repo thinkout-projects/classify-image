@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedKFold
 from .utils.folder import folder_create
 
 
-def k_fold_split(k, csv_config, split_info_folder, df, classes, hasID):
+def k_fold_split(k, csv_config, split_info_folder, df, hasID):
     '''
     k_fold_splitを行い、分割情報をcsvに保存する
     '''
