@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 層化k分割の交差検証
+# データセットの交差検証
 
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from .utils.folder import folder_create
 
 
-def k_fold_split(k, csv_config, split_info_folder, df, hasID):
+def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
     '''
-    k_fold_splitを行い、分割情報をcsvに保存する
+    層化k分割を行い、分割情報をcsvに保存する
+    image_classifier.pyで使うことを想定
     '''
 
-    random_seed = 1
+    RANDOM_SEED = 1
 
     filename_column = csv_config["image_filename_column"]
     label_column = csv_config["label_column"]
@@ -38,7 +39,7 @@ def k_fold_split(k, csv_config, split_info_folder, df, hasID):
 
     # 個人IDと分類ラベルの対応を用いてデータ分割を行う
     skf = StratifiedKFold(n_splits=k, shuffle=True,
-                          random_state=random_seed)
+                          random_state=RANDOM_SEED)
     filelist_for_train = []
     filelist_for_test = []
     for (i, (train_index, test_index)) in enumerate(skf.split(ID_unique_list,
@@ -95,6 +96,91 @@ def k_fold_split(k, csv_config, split_info_folder, df, hasID):
             ds_test = pd.Series(test_name)
             df_test = pd.concat([df_test, pd.DataFrame(
                 ds_test, columns=[label])], axis=1)
+
+        df_train.to_csv(f"{split_info_folder}/train_{str(idx)}.csv",
+                        index=False, encoding="utf-8")
+        df_test.to_csv(f"{split_info_folder}/test_{str(idx)}.csv",
+                       index=False, encoding="utf-8")
+
+        df_train_list.append(df_train)
+        df_test_list.append(df_test)
+
+    return df_train_list, df_test_list
+
+
+def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
+    '''
+    k分割交差検証を行い、分割情報をcsvに保存する
+    image_regressor.pyで使うことを想定
+    '''
+
+    RANDOM_SEED = 1
+    filename_column = csv_config["image_filename_column"]
+
+    # ID列がない場合はファイル名列をID列として扱う
+    if hasID:
+        id_column = csv_config["ID_column"]
+    else:
+        id_column = filename_column
+
+    # ID_uniqueは一意な個人IDのリスト
+    ID_unique_list = df[id_column].unique().tolist()
+    for ID in ID_unique_list:
+        # 同じ個人IDを持つ行を抽出
+        queried_df = df[df[id_column] == ID]
+
+    # 個人IDを用いてデータ分割を行う
+    kf = KFold(n_splits=k, shuffle=True,
+               random_state=RANDOM_SEED)
+    filelist_for_train = []
+    filelist_for_test = []
+    for (train_index, test_index) in kf.split(ID_unique_list):
+        IDs_for_train = []
+        IDs_for_test = []
+        splited_filelist_for_train = []
+        splited_filelist_for_test = []
+
+        for id_index in train_index:
+            IDs_for_train.append(ID_unique_list[id_index])
+        for id_index in test_index:
+            IDs_for_test.append(ID_unique_list[id_index])
+
+        for ID in IDs_for_train:
+            # 同じ個人IDを持つ行を抽出
+            queried_df = df[df[id_column] == ID]
+            filename_list = queried_df[filename_column].values.tolist()
+            for filename in filename_list:
+                splited_filelist_for_train.append(filename)
+
+        for ID in IDs_for_test:
+            # 同じ個人IDを持つ行を抽出
+            queried_df = df[df[id_column] == ID]
+            filename_list = queried_df[filename_column].values.tolist()
+            for filename in filename_list:
+                splited_filelist_for_test.append(filename)
+
+        filelist_for_train.append(splited_filelist_for_train)
+        filelist_for_test.append(splited_filelist_for_test)
+
+    # 分割情報が書かれたcsvを保存するフォルダ
+    folder_create(split_info_folder)
+
+    df_train_list = []
+    df_test_list = []
+
+    # スプリット順にcsvに出力
+    for idx in range(k):
+        df_train = pd.DataFrame()
+        df_test = pd.DataFrame()
+
+        # 列(ファイル名)を追加していく
+        train_name = filelist_for_train[idx]
+        ds_train = pd.Series(train_name)
+        df_train = pd.concat([df_train, pd.DataFrame(ds_train)], axis=1)
+
+        test_name = filelist_for_test[idx]
+        ds_test = pd.Series(test_name)
+        df_test = pd.concat([df_test, pd.DataFrame(ds_test)], axis=1)
 
         df_train.to_csv(f"{split_info_folder}/train_{str(idx)}.csv",
                         index=False, encoding="utf-8")
