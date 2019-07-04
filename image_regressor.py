@@ -99,7 +99,7 @@ def main():
 
     # 層化k分割
     printWithDate("spliting dataset")
-    if options['CSV']['ID_column'] == "":
+    if options['CSV']['ID_column'] == "None":
         hasID = False
     else:
         hasID = True
