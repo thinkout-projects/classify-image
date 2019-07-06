@@ -147,6 +147,30 @@ def fpath_tag_making(root, classes):
     return fpath_list, tag_array
 
 
+def fpath_making(root):
+    '''
+    root/00_normal/画像を見に行く。
+    filepathのリストとtagのカテゴリー化済みのarrayが出力される。
+    '''
+
+    # train
+    seed = 1
+    file_folder_list = os.listdir(root)
+    folder_list = [f for f in file_folder_list
+                   if os.path.isdir(os.path.join(root, f))]
+    fpath_list = []
+    # train/00_tgt
+    for i, folder in enumerate(folder_list):
+        folder_path = os.path.join(root, folder)
+        file_list = os.listdir(folder_path)
+        for file_ in file_list:
+            fpath = os.path.join(folder_path, file_)
+            fpath_list.append(fpath)
+    np.random.seed(seed)
+    np.random.shuffle(fpath_list)
+    return fpath_list
+
+
 def num_count(root):
     '''
     訓練用データ数のカウント

@@ -21,10 +21,10 @@ class Learning(Training):
 
     def __init__(self, folder_names, idx,
                  pic_mode, train_num_mode_dic, size, classes, args_of_IDG, BATCH_SIZE, model_folder, model,
-                 X_val, y_val, epochs):
+                 X_val, y_val, epochs, df_train):
         super().__init__(folder_names, idx,
                          pic_mode, train_num_mode_dic, size, classes,
-                         args_of_IDG, BATCH_SIZE)
+                         args_of_IDG, BATCH_SIZE, df_train)
         self.model_folder = model_folder
         self.model = model
         self.pic_mode = pic_mode

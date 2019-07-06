@@ -117,6 +117,7 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
 
     RANDOM_SEED = 1
     filename_column = csv_config["image_filename_column"]
+    label_column = csv_config["label_column"]
 
     # ID列がない場合はファイル名列をID列として扱う
     if hasID:
@@ -135,11 +136,15 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
                random_state=RANDOM_SEED)
     filelist_for_train = []
     filelist_for_test = []
+    tergetlist_for_train = []
+    tergetlist_for_test = []
     for (train_index, test_index) in kf.split(ID_unique_list):
         IDs_for_train = []
         IDs_for_test = []
         splited_filelist_for_train = []
         splited_filelist_for_test = []
+        splited_tergetlist_for_train = []
+        splited_tergetlist_for_test = []
 
         for id_index in train_index:
             IDs_for_train.append(ID_unique_list[id_index])
@@ -150,18 +155,24 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
-            for filename in filename_list:
+            label_list = queried_df[label_column].values.tolist()
+            for filename, label in zip(filename_list, label_list):
                 splited_filelist_for_train.append(filename)
+                splited_tergetlist_for_train.append(label)
 
         for ID in IDs_for_test:
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
-            for filename in filename_list:
+            label_list = queried_df[label_column].values.tolist()
+            for filename, label in zip(filename_list, label_list):
                 splited_filelist_for_test.append(filename)
+                splited_tergetlist_for_test.append(label)
 
         filelist_for_train.append(splited_filelist_for_train)
         filelist_for_test.append(splited_filelist_for_test)
+        tergetlist_for_train.append(splited_tergetlist_for_train)
+        tergetlist_for_test.append(splited_tergetlist_for_test)
 
     # 分割情報が書かれたcsvを保存するフォルダ
     folder_create(split_info_folder)
@@ -176,12 +187,22 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
 
         # 列(ファイル名)を追加していく
         train_name = filelist_for_train[idx]
+        terget_val = tergetlist_for_train[idx]
         ds_train = pd.Series(train_name)
-        df_train = pd.concat([df_train, pd.DataFrame(ds_train)], axis=1)
+        ds_terget = pd.Series(terget_val)
+        df_train = pd.concat([df_train,
+                              pd.DataFrame(ds_train, columns=["filename"]),
+                              pd.DataFrame(ds_terget, columns=["terget"])],
+                             axis=1)
 
         test_name = filelist_for_test[idx]
+        terget_val = tergetlist_for_test[idx]
         ds_test = pd.Series(test_name)
-        df_test = pd.concat([df_test, pd.DataFrame(ds_test)], axis=1)
+        ds_terget = pd.Series(terget_val)
+        df_test = pd.concat([df_test,
+                             pd.DataFrame(ds_test, columns=["filename"]),
+                             pd.DataFrame(ds_terget, columns=["terget"])],
+                            axis=1)
 
         df_train.to_csv(f"{split_info_folder}/train_{idx}.csv",
                         index=False, encoding="utf-8")

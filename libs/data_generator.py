@@ -9,7 +9,7 @@ import cv2
 import random
 import threading
 import shutil
-from .utils.utils import fpath_tag_making, read_img, printWithDate
+from .utils.utils import fpath_tag_making, fpath_making, read_img, printWithDate
 from .utils.folder import folder_create
 from keras.preprocessing.image import ImageDataGenerator
 # from keras.utils import np_utils
@@ -105,6 +105,38 @@ class Training(object):
                     pbar.update(1)
         return
 
+    def pic_df_training_reg(self):
+        '''
+        Datasetから訓練用フォルダを作成（回帰分析）
+        '''
+        # train作成
+        folder_create(self.train_root)
+        train_folder = os.path.join(self.train_root, "regression")
+        folder_create(train_folder)
+
+        train_list = self.df_train["filename"]
+        terget_list = self.df_train["terget"]
+
+        with tqdm(total=len(train_list), leave=True) as pbar:
+            # 画像ごとに
+            for train_file, terget_val in zip(train_list, terget_list):
+                # img/00_normal/画像
+                img_path = os.path.join(self.source_folder, train_file)
+                src0 = cv2.imread(img_path)
+                file_without = train_file.split(".")[0]
+
+                # train_num_mode_dicはフォルダ名をKeyとして、numとmodeのリストを保持している。
+                # num・・・9個の変換の中で指定の数だけを作成する。
+                # mode・・・0なら左右反転なし、1なら左右反転あり。
+                num_mode = self.train_num_mode_dic["regression"]
+                num = num_mode[0]
+                mode = num_mode[1]
+                num_list = random.sample(range(9), num)
+                data_augment(train_folder, file_without,
+                             src0, num_list, mode, terget_val)
+                pbar.update(1)
+        return
+
     def data_gen(self, X_train):
         '''
         さらにnumpyの中でデータ拡張を行うもの
@@ -134,14 +166,12 @@ class Training(object):
             X_train.append(X)
             # 回帰の場合はファイル名冒頭からターゲットを読み込む
             if(self.pic_mode == 2):
-                # TODO: csv対応
-                y_train.append(int(fpath.split("\\")[-1].split("_")[2]))
+                y_train.append((fpath.split("/")[-1].split("#")[0]))
         X_train = np.array(X_train)
         X_train = Training.data_gen(self, X_train)
         if(self.pic_mode != 2):
             y_train = tag_array[i: i + self.BATCH_SIZE]
         else:
-            # TODO: csv対応
             y_train = np.array(y_train)
         return X_train, y_train
 
@@ -229,10 +259,54 @@ class Validation(object):
             # TODO: csv対応
             return (X_val, y_val, fpath_list)
 
+    def pic_df_test_reg(self):
+        '''
+        評価用データの画像を出力（画像解析用、回帰分析）
+        '''
+        # test作成
+        folder_create(self.test_root)
+        test_folder = os.path.join(self.test_root, "regression")
+        folder_create(test_folder)
+
+        # test/00_Normal作成
+        test_list = self.df_test["filename"]
+        terget_list = self.df_test["terget"]
+
+        with tqdm(total=len(test_list), leave=True) as pbar:
+            for test_file, terget_val in zip(test_list, terget_list):
+                img_path = os.path.join(self.source_folder, test_file)
+                new_filename = f"{terget_val}#{test_file}"
+                new_path = os.path.join(test_folder, new_filename)
+                shutil.copy(img_path, new_path)
+                pbar.update(1)
+        return
+
+    def pic_gen_data_reg(self):
+        '''
+        評価用データ生成（回帰分析）
+        '''
+
+        fpath_list = fpath_making(self.test_root)
+        X_val = []
+        y_val = []
+        for fpath in fpath_list:
+            X = read_img(fpath, self.h, self.w)
+            X_val.append(X)
+            y_val.append(float(fpath.split("/")[-1].split("#")[0]))
+
+        # 全てを再度array化する
+        X_val = np.array(X_val)
+        y_val = np.array(y_val)
+
+        # class数, validation dataがいくつか
+        printWithDate(len(X_val), " files for validation")
+        # validationのデータとlabel、ファイルパス
+        return (X_val, y_val, fpath_list)
+
 
 # 画像データの増強・水増しをopencvのエフェクトを使って行う
 
-def data_augment(newfolder, file, src0, num_list, mode):
+def data_augment(newfolder, file, src0, num_list, mode, terget=None):
     '''
     `newfolder`は保存先のフォルダ
     `file`は元々のfile名（拡張子なし）→のちにjpgをたす
@@ -245,7 +319,7 @@ def data_augment(newfolder, file, src0, num_list, mode):
     for num in num_list:
         if mode == 0:
             dst0 = data.convert(src0, num)
-            newfile0 = f"{num}_{file}.jpg"
+            newfile0 = f"{terget}#{num}_{file}.jpg"
             newfpath0 = os.path.join(newfolder, newfile0)
             # 全ての画像に同じ処理をしたい場合はここに！マスキングなど
             cv2.imwrite(newfpath0, dst0)
@@ -253,8 +327,8 @@ def data_augment(newfolder, file, src0, num_list, mode):
             src1 = data.lr_flip_func(src0)
             dst0 = data.convert(src0, num)
             dst1 = data.convert(src1, num)
-            newfile0 = f"0_{num}_{file}.jpg"
-            newfile1 = f"1_{num}_{file}.jpg"
+            newfile0 = f"{terget}#0_{num}_{file}.jpg"
+            newfile1 = f"{terget}#1_{num}_{file}.jpg"
             newfpath0 = os.path.join(newfolder, newfile0)
             newfpath1 = os.path.join(newfolder, newfile1)
             cv2.imwrite(newfpath0, dst0)

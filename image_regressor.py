@@ -86,9 +86,12 @@ def main():
     df = pd.read_csv(options['CSV']['csv_filename'])
 
     # 分類ラベルをリスト化し、リストの長さを調べて分類数とする
-    label_list = df[options['CSV']['label_column']].unique().tolist()
+    # TODO: PIC_MODEを廃止して
+    #       classes=1: 回帰, classes=2: 2値分類, classes>=3: 多値分類
+    #       と扱うようにする
+    label_list = ["regression"]
     classes = len(label_list)
-    printWithDate(f'{classes} classes found')
+    printWithDate(f'regression mode')
 
     # ここで、データ拡張の方法を指定。
     # TODO: 回帰の目標値によって増強方法を変更出来るようにする
@@ -99,12 +102,13 @@ def main():
                                      options.getboolean('DataGenerate', 'use_flip')]
 
     # 層化k分割
-    printWithDate("spliting dataset")
     if options['CSV']['ID_column'] == "None":
         hasID = False
     else:
         hasID = True
+    printWithDate(f"hasID = {hasID}")
 
+    printWithDate("spliting dataset")
     df_train_list, df_test_list = \
         simple_k_fold(options.getint('Validation', 'k'),
                       options['CSV'],
@@ -122,8 +126,8 @@ def main():
         validation = Validation(image_size,
                                 options['FolderName'],
                                 classes, PIC_MODE, idx, df_test_list[idx])
-        validation.pic_df_test()
-        X_val, y_val, W_val = validation.pic_gen_data()
+        validation.pic_df_test_reg()
+        X_val, y_val, W_val = validation.pic_gen_data_reg()
 
         # 訓練用データについて
         printWithDate("making data for training",
@@ -134,7 +138,7 @@ def main():
                             options['ImageDataGenerator'],
                             options.getint('HyperParameter', 'batch_size'),
                             df_train_list[idx])
-        training.pic_df_training()
+        training.pic_df_training_reg()
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先にここで定義
@@ -189,7 +193,8 @@ def main():
                                 options['ImageDataGenerator'],
                                 options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model, X_val, y_val,
-                                options.getint('HyperParameter', 'epochs'))
+                                options.getint('HyperParameter', 'epochs'),
+                                df_train_list[idx])
 
             # 訓練実行
             history = learning.learning_model()

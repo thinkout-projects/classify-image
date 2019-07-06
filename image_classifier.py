@@ -106,12 +106,13 @@ def main():
                                      options.getboolean('DataGenerate', 'use_flip')]
 
     # 層化k分割
-    printWithDate("spliting dataset")
     if options['CSV']['ID_column'] == "None":
         hasID = False
     else:
         hasID = True
+    printWithDate(f"hasID = {hasID}")
 
+    printWithDate("spliting dataset")
     df_train_list, df_test_list = \
         stratified_k_fold(options.getint('Validation', 'k'),
                           options['CSV'],
@@ -201,7 +202,8 @@ def main():
                                 options['ImageDataGenerator'],
                                 options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model, X_val, y_val,
-                                options.getint('HyperParameter', 'epochs'))
+                                options.getint('HyperParameter', 'epochs'),
+                                df_train_list[idx])
 
             # 訓練実行
             history = learning.learning_model()
