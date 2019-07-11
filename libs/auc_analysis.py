@@ -66,7 +66,7 @@ class Miss_classify(object):
         for num in range(len(pre_list)):
             # y_val[num]は当該ファイルの正答のベクトル、argmaxで正答番号がわかる
             # W_val[num]は当該ファイルのパス、\\で分割し-1にすることで一番最後のファイル名が分かる
-            file_name_list.append(self.W_val[num].split("\\")[-1])
+            file_name_list.append(os.path.basename(self.W_val[num]))
 
         df = pd.DataFrame()
         df["filename"] = file_name_list
@@ -101,7 +101,7 @@ class Miss_regression(object):
         # クラス分の[]を用意する。
         file_name_list = []
         for W in self.W_val:
-            file_name_list.append(W.split("\\")[-1])
+            file_name_list.append(os.path.basename(W))
 
         df = pd.DataFrame()
         df["filename"] = file_name_list
