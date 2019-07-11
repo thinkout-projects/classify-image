@@ -155,7 +155,7 @@ def summary_analysis_binary(miss_summary_file, summary_file, roc_fig,
 
     # y_true, y_predはsklearn.metrics.roc_auc_scoreのy_true, y_scoreに渡される
     y_true = np.array(df["true"])
-    y_pred = np.array(df[label_list[1]])
+    y_pred = np.array(df[str(label_list[1])])
 
     # AUCについて
     # y_pred, y_trueを用いて95%信頼区間を求める
