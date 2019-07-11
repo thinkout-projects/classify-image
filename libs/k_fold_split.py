@@ -6,6 +6,7 @@
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, KFold
 from .utils.folder import folder_create
+from tqdm import tqdm
 
 
 def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
@@ -30,7 +31,7 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
     # [！] 同じ個人IDは全て同じ分類ラベルを持っている仮定に基づく
     ID_unique_list = df[id_column].unique().tolist()
     y_unique_list = []
-    for ID in ID_unique_list:
+    for ID in tqdm(ID_unique_list, desc="finding same ID"):
         # 同じ個人IDを持つ行を抽出
         queried_df = df[df[id_column] == ID]
         # 最初に見つかった分類ラベルを使用する
@@ -42,7 +43,9 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
                           random_state=RANDOM_SEED)
     filelist_for_train = []
     filelist_for_test = []
-    for (train_index, test_index) in skf.split(ID_unique_list, y_unique_list):
+    for (train_index, test_index) in tqdm(skf.split(ID_unique_list,
+                                                    y_unique_list),
+                                          desc="splitting train/test"):
         IDs_for_train = []
         IDs_for_test = []
         for id_index in train_index:
@@ -54,7 +57,7 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
         label_filelist4Train_dic = {label: [] for label in y_unique_list}
         label_filelist4Test_dic = {label: [] for label in y_unique_list}
 
-        for ID in IDs_for_train:
+        for ID in tqdm(IDs_for_train, desc="splitting train"):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
@@ -62,7 +65,7 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
             for filename, label in zip(filename_list, label_list):
                 label_filelist4Train_dic[label].append(filename)
 
-        for ID in IDs_for_test:
+        for ID in tqdm(IDs_for_test, desc="splitting train"):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
@@ -127,7 +130,7 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
 
     # ID_uniqueは一意な個人IDのリスト
     ID_unique_list = df[id_column].unique().tolist()
-    for ID in ID_unique_list:
+    for ID in tqdm(ID_unique_list, desc="finding same ID"):
         # 同じ個人IDを持つ行を抽出
         queried_df = df[df[id_column] == ID]
 
@@ -138,7 +141,8 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
     filelist_for_test = []
     tergetlist_for_train = []
     tergetlist_for_test = []
-    for (train_index, test_index) in kf.split(ID_unique_list):
+    for (train_index, test_index) in tqdm(kf.split(ID_unique_list),
+                                          desc="splitting train/test"):
         IDs_for_train = []
         IDs_for_test = []
         splited_filelist_for_train = []
@@ -151,7 +155,7 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
         for id_index in test_index:
             IDs_for_test.append(ID_unique_list[id_index])
 
-        for ID in IDs_for_train:
+        for ID in tqdm(IDs_for_train, desc="splitting train"):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
@@ -160,7 +164,7 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
                 splited_filelist_for_train.append(filename)
                 splited_tergetlist_for_train.append(label)
 
-        for ID in IDs_for_test:
+        for ID in tqdm(IDs_for_test, desc="splitting test"):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
