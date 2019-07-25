@@ -52,8 +52,8 @@ def threadsafe_generator(f):
 
 class Training(object):
     def __init__(self, folder_names, idx,
-                 pic_mode, train_num_mode_dic, size, classes, args_of_IDG,
-                 BATCH_SIZE, df_train):
+                 pic_mode, train_num_mode_dic, size, classes, positive_label,
+                 args_of_IDG, BATCH_SIZE, df_train):
         self.source_folder = folder_names['dataset']
         self.train_root = folder_names['train']
         self.idx = idx
@@ -62,6 +62,7 @@ class Training(object):
         self.h = size[0]
         self.w = size[1]
         self.classes = classes
+        self.positive_label = positive_label
         self.rotation_range = int(args_of_IDG['rotation_range'])
         self.width_shift_range = float(args_of_IDG['width_shift_range'])
         self.height_shift_range = float(args_of_IDG['height_shift_range'])
@@ -192,12 +193,14 @@ class Validation(object):
     評価用データの作成および読み込みのクラス
     '''
 
-    def __init__(self, size, folder_names, classes, pic_mode, idx, df_test):
+    def __init__(self, size, folder_names, classes, positive_label,
+                 pic_mode, idx, df_test):
         self.source_folder = folder_names['dataset']
         self.test_root = folder_names['test']
         self.idx = idx
         self.pic_mode = pic_mode
         self.classes = classes
+        self.positive_label = positive_label
         self.h = size[0]
         self.w = size[1]
         self.df_test = df_test
@@ -235,7 +238,8 @@ class Validation(object):
         評価用データ生成（画像からtest/00_normal/画像となっている想定）
         '''
 
-        fpath_list, tag_array = fpath_tag_making(self.test_root, self.classes)
+        fpath_list, tag_array = fpath_tag_making(self.test_root, self.classes,
+                                                 self.positive_label)
         X_val = []
         y_val = []
         for fpath in fpath_list:

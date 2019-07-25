@@ -129,7 +129,8 @@ def main():
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
         validation = Validation(image_size,
                                 options['FolderName'],
-                                classes, PIC_MODE, idx, df_test_list[idx])
+                                classes, options['Analysis']['positive_label'],
+                                PIC_MODE, idx, df_test_list[idx])
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
@@ -139,6 +140,7 @@ def main():
         training = Training(options['FolderName'], idx, PIC_MODE,
                             train_num_mode_dic,
                             image_size, classes,
+                            options['Analysis']['positive_label'],
                             options['ImageDataGenerator'],
                             options.getint('HyperParameter', 'batch_size'),
                             df_train_list[idx])
@@ -199,6 +201,7 @@ def main():
             learning = Learning(options['FolderName'], idx, PIC_MODE,
                                 train_num_mode_dic,
                                 image_size, classes,
+                                options['Analysis']['positive_label'],
                                 options['ImageDataGenerator'],
                                 options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model, X_val, y_val,
