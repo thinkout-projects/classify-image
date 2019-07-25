@@ -44,14 +44,17 @@ def check_options(Options):
                 'Analysis',
                 'etc']
 
-    OPTIONS = [['dataset',
+    OPTIONS = [  # FolderName
+               ['dataset',
                 'split_info',
                 'train',
                 'test'],
+               # CSV
                ['csv_filename',
                 'image_filename_column',
                 'ID_column',
                 'label_column'],
+               # NetworkUsing
                ['VGG16',
                 'VGG19',
                 'DenseNet121',
@@ -61,19 +64,27 @@ def check_options(Options):
                 'InceptionV3',
                 'ResNet50',
                 'Xception'],
+               # ImageSize
                ['width',
                 'height'],
+               # HyperParameter
                ['batch_size',
                 'epochs'],
+               # DataGenerate
                ['num_of_augs',
                 'use_flip'],
+               # ImageDataGenerator
                ['rotation_range',
                 'width_shift_range',
                 'height_shift_range',
                 'shear_range',
                 'zoom_range'],
+               # Validation
                ['k'],
-               ['alpha'],
+               # Analysis
+               ['alpha',
+                'positive_label'],
+               # etc
                ['wait_sec']]
 
     # 欠けているセクション・オプションがないか調べる
