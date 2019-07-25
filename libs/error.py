@@ -51,3 +51,17 @@ def option_not_found(section_name, option_name):
 
     sys.exit(201)
     return
+
+
+def positive_label_not_found(positive_label):
+    '''
+    データセットに陽性ラベルとして指定したラベルが無かったときに発生
+    終了コード : 300
+    '''
+    print(PREFIX)
+    print(f"Error Code 301: positive label [{positive_label}] is not found.")
+    print(f"Check positive label [{positive_label}] is correct.")
+    print(SUFFIX)
+
+    sys.exit(300)
+    return
