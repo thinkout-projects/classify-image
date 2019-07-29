@@ -146,8 +146,10 @@ def miss_summarize(miss_folder, miss_file):
 
 
 def summary_analysis_binary(miss_summary_file, summary_file, roc_fig,
-                            label_list, alpha):
+                            label_list, positive_label, alpha):
     df = pd.read_csv(miss_summary_file, encoding="utf-8")
+    # libs/utils/utils.pyのfpath_tag_making()により、
+    # 陰性は0, 陽性は1のタグが付けられることは確定している
     df0 = df[df["true"] == 0]
     df1 = df[df["true"] == 1]
     n_normal = len(df0)
@@ -155,7 +157,7 @@ def summary_analysis_binary(miss_summary_file, summary_file, roc_fig,
 
     # y_true, y_predはsklearn.metrics.roc_auc_scoreのy_true, y_scoreに渡される
     y_true = np.array(df["true"])
-    y_pred = np.array(df[str(label_list[1])])
+    y_pred = np.array(df[str(positive_label)])
 
     # AUCについて
     # y_pred, y_trueを用いて95%信頼区間を求める

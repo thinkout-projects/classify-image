@@ -262,6 +262,7 @@ def main():
         if PIC_MODE == 0:
             summary_analysis_binary(miss_file, summary_file, fig_file,
                                     label_list,
+                                    str(options['Analysis']['positive_label']),
                                     options.getfloat('Analysis', 'alpha'))
         elif PIC_MODE == 1:
             summary_analysis_categorical(miss_file, summary_file,
