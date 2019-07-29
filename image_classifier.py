@@ -95,7 +95,7 @@ def main():
     # 2値分類の場合にpositive_labelに指定されたラベルがあるかどうか調べる
     if classes == 2:
         for label in label_list:
-            if label == options['Analysis']['positive_label']:
+            if str(label) == str(options['Analysis']['positive_label']):
                 printWithDate(f'positive label is \"{label}\".')
                 break
         else:
