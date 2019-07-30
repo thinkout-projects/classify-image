@@ -32,9 +32,10 @@ class Miss_classify(object):
         pred_list = []
         # true_listは[0, 1, 0, 0]のように示される正解番号リスト
         true_list = []
-        folder_list = os.listdir(self.test_folder)
-        nb_classes = len(folder_list)
-        score_list = [[] for x in range(nb_classes)]
+        # class_score_dicは、
+        # class名をキーとしてAI解答リスト([0.1, 0.9], [0.8, 0.2])を値に持つ辞書
+        class_list = os.listdir(self.test_folder)
+        class_score_dic = {}
 
         for i, v in enumerate(self.y_pred):
             # pred_ansはfileごとの確率の羅列
@@ -45,18 +46,19 @@ class Miss_classify(object):
             true_ans = self.y_val[i].argmax()
             true_list.append(true_ans)
 
-            for idx in range(nb_classes):
-                score_list[idx].append(v[idx])
+            for idx, class_name in enumerate(class_list):
+                class_score_dic[str(class_name)] = v[idx]
             if pred_ans != true_ans:
                 miss += 1
-        return miss, pre_list, true_list, score_list
+        return miss, pred_list, true_list, class_score_dic
 
     def miss_csv_making(self):
         '''
         全てのファイルをフォルダごとにcsvファイルに書き込む
         '''
 
-        miss, pre_list, true_list, score_list = Miss_classify.miss_detail(self)
+        miss, pred_list, true_list, class_score_dic = \
+            Miss_classify.miss_detail(self)
 
         # missフォルダ作成
         folder_create(self.miss_folder)
@@ -73,8 +75,8 @@ class Miss_classify(object):
         df["true"] = true_list
         df["predict"] = pred_list
 
-        for i, score in enumerate(score_list):
-            df[folder_list[i]] = score
+        for class_name, score in class_score_dic.items():
+            df[str(class_name)] = score
         miss_file = "miss" + "_" + str(self.idx) + "." + "csv"
         miss_fpath = os.path.join(self.miss_folder, miss_file)
         df.to_csv(miss_fpath, index=False, encoding="utf-8")
