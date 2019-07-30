@@ -25,27 +25,29 @@ class Miss_classify(object):
         self.test_folder = test_folder
         self.miss_folder = miss_folder
 
-    # miss_detail・・・
-    # missは誤答数, true_listは[0, 1, 0, 0]のように示される正解番号リスト
-    # pred_listは[0. 1. 0. 1]のように示されるAI解答番号リスト
-    # score_listは[[0.1, 0.9], [0.8, 0.2]]のように示されるAI解答リスト
     def miss_detail(self):
+        # missは誤答数
         miss = 0
-        pre_list = []
+        # pred_listは[0. 1. 0. 1]のように示されるAI解答番号リスト
+        pred_list = []
+        # true_listは[0, 1, 0, 0]のように示される正解番号リスト
         true_list = []
         folder_list = os.listdir(self.test_folder)
         nb_classes = len(folder_list)
         score_list = [[] for x in range(nb_classes)]
-        # preはfileごとの確率の羅列
-        # pre_listはすべての問題のAIによる回答
+
         for i, v in enumerate(self.y_pred):
-            pre_ans = v.argmax()
-            pre_list.append(pre_ans)
-            ans = self.y_val[i].argmax()
-            true_list.append(ans)
+            # pred_ansはfileごとの確率の羅列
+            pred_ans = v.argmax()
+            # pred_listはすべての問題のAIによる回答
+            pred_list.append(pred_ans)
+
+            true_ans = self.y_val[i].argmax()
+            true_list.append(true_ans)
+
             for idx in range(nb_classes):
                 score_list[idx].append(v[idx])
-            if pre_ans != ans:
+            if pred_ans != true_ans:
                 miss += 1
         return miss, pre_list, true_list, score_list
 
@@ -58,12 +60,10 @@ class Miss_classify(object):
 
         # missフォルダ作成
         folder_create(self.miss_folder)
-        folder_list = os.listdir(self.test_folder)
-        # nb_classes = len(folder_list)
 
         # クラス分の[]を用意する。
         file_name_list = []
-        for num in range(len(pre_list)):
+        for num in range(len(pred_list)):
             # y_val[num]は当該ファイルの正答のベクトル、argmaxで正答番号がわかる
             # W_val[num]は当該ファイルのパス、\\で分割し-1にすることで一番最後のファイル名が分かる
             file_name_list.append(os.path.basename(self.W_val[num]))
@@ -71,7 +71,7 @@ class Miss_classify(object):
         df = pd.DataFrame()
         df["filename"] = file_name_list
         df["true"] = true_list
-        df["predict"] = pre_list
+        df["predict"] = pred_list
 
         for i, score in enumerate(score_list):
             df[folder_list[i]] = score
@@ -89,12 +89,7 @@ class Miss_regression(object):
         self.W_val = W_val
         self.miss_folder = miss_folder
 
-    # miss_detail・・・
-    # missは誤答数, true_listは[0, 1, 0, 0]のように示される正解番号リスト
-    # pred_listは[0. 1. 0. 1]のように示されるAI解答番号リスト
-    # score_listは[[0.1, 0.9], [0.8, 0.2]]のように示されるAI解答リスト
     def miss_csv_making(self):
-
         # missフォルダ作成
         folder_create(self.miss_folder)
 
