@@ -19,6 +19,7 @@ from sklearn.metrics import roc_curve, auc
 class Miss_classify(object):
     def __init__(self, idx, y_pred, y_val, W_val, test_folder, miss_folder):
         self.idx = idx
+        # 2値分類のとき、y_pred, y_valは、陰性が0, 陽性が1を示す
         self.y_pred = y_pred
         self.y_val = y_val
         self.W_val = W_val
@@ -26,9 +27,7 @@ class Miss_classify(object):
         self.miss_folder = miss_folder
 
     def miss_detail(self):
-        # missは誤答数
-        miss = 0
-        # pred_listは[0. 1. 0. 1]のように示されるAI解答番号リスト
+        # pred_listは[0, 1, 0, 1]のように示されるAI解答番号リスト
         pred_list = []
         # true_listは[0, 1, 0, 0]のように示される正解番号リスト
         true_list = []
@@ -37,27 +36,24 @@ class Miss_classify(object):
         class_list = os.listdir(self.test_folder)
         class_score_dic = {}
 
-        for i, v in enumerate(self.y_pred):
+        for pred, true in zip(self.y_pred, self.y_val):
             # pred_ansはfileごとの確率の羅列
-            pred_ans = v.argmax()
+            pred_ans = pred.argmax()
             # pred_listはすべての問題のAIによる回答
             pred_list.append(pred_ans)
 
-            true_ans = self.y_val[i].argmax()
+            true_ans = true.argmax()
             true_list.append(true_ans)
 
             for idx, class_name in enumerate(class_list):
-                class_score_dic[str(class_name)] = v[idx]
-            if pred_ans != true_ans:
-                miss += 1
-        return miss, pred_list, true_list, class_score_dic
+                class_score_dic[str(class_name)] = pred[idx]
+        return pred_list, true_list, class_score_dic
 
     def miss_csv_making(self):
         '''
         全てのファイルをフォルダごとにcsvファイルに書き込む
         '''
-
-        miss, pred_list, true_list, class_score_dic = \
+        pred_list, true_list, class_score_dic = \
             Miss_classify.miss_detail(self)
 
         # missフォルダ作成
@@ -67,7 +63,7 @@ class Miss_classify(object):
         file_name_list = []
         for num in range(len(pred_list)):
             # y_val[num]は当該ファイルの正答のベクトル、argmaxで正答番号がわかる
-            # W_val[num]は当該ファイルのパス、\\で分割し-1にすることで一番最後のファイル名が分かる
+            # W_val[num]は当該ファイルのパス
             file_name_list.append(os.path.basename(self.W_val[num]))
 
         df = pd.DataFrame()
