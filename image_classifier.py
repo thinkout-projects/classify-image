@@ -92,15 +92,20 @@ def main():
     classes = len(label_list)
     printWithDate(f'{classes} classes found')
 
-    # 2値分類の場合にpositive_labelに指定されたラベルがあるかどうか調べる
+    # 2値分類の場合
     if classes == 2:
+        positive_label = str(options['Analysis']['positive_label'])
+        if positive_label not in label_list:
+            # 分類ラベルにpositive_labelが無い場合、エラーを出して終了する
+            error.positive_label_not_found(positive_label)
         for label in label_list:
-            if str(label) == str(options['Analysis']['positive_label']):
+            if str(label) == positive_label:
                 printWithDate(f'positive label is \"{label}\".')
-                break
-        else:
-            error.positive_label_not_found(
-                options['Analysis']['positive_label'])
+            else:
+                printWithDate(f'negative label is \"{label}\".')
+                negative_label = str(label)
+        # negative_labelが先(0), positive_labelが後(1)に来るようにlabel_listを上書きする
+        label_list = [negative_label, positive_label]
 
     # pic_modeを決める
     if classes == 2:
