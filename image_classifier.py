@@ -232,8 +232,7 @@ def main():
             model_load(model, model_folder, idx)
             y_pred = model.predict(X_val)
             Miss_classify(idx, y_pred, y_val, W_val,
-                          options['FolderName']['test'],
-                          miss_folder).miss_csv_making()
+                          miss_folder, label_list).miss_csv_making()
 
             printWithDate(
                 f"Analysis finished [{idx + 1}/{options.getint('Validation', 'k')}]")

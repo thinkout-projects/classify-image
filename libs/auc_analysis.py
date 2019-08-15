@@ -17,13 +17,13 @@ from sklearn.metrics import roc_curve, auc
 
 
 class Miss_classify(object):
-    def __init__(self, idx, y_pred, y_val, W_val, test_folder, miss_folder):
+    def __init__(self, idx, y_pred, y_val, W_val, miss_folder, label_list):
         self.idx = idx
         # 2値分類のとき、y_pred, y_valは、陰性が0, 陽性が1を示す
         self.y_pred = y_pred
         self.y_val = y_val
         self.W_val = W_val
-        self.test_folder = test_folder
+        self.class_list = label_list
         self.miss_folder = miss_folder
 
     def miss_detail(self):
@@ -33,8 +33,9 @@ class Miss_classify(object):
         true_list = []
         # class_score_dicは、
         # class名をキーとしてAI解答リスト([0.1, 0.9], [0.8, 0.2])を値に持つ辞書
-        class_list = os.listdir(self.test_folder)
         class_score_dic = {}
+        for class_name in self.class_list:
+            class_score_dic[str(class_name)] = []
 
         for pred, true in zip(self.y_pred, self.y_val):
             # pred_ansはfileごとの確率の羅列
@@ -45,8 +46,8 @@ class Miss_classify(object):
             true_ans = true.argmax()
             true_list.append(true_ans)
 
-            for idx, class_name in enumerate(class_list):
-                class_score_dic[str(class_name)] = pred[idx]
+            for idx, class_name in enumerate(self.class_list):
+                class_score_dic[str(class_name)].append(pred[idx])
         return pred_list, true_list, class_score_dic
 
     def miss_csv_making(self):
@@ -71,8 +72,8 @@ class Miss_classify(object):
         df["true"] = true_list
         df["predict"] = pred_list
 
-        for class_name, score in class_score_dic.items():
-            df[str(class_name)] = score
+        for class_name, score_list in class_score_dic.items():
+            df[str(class_name)] = score_list
         miss_file = "miss" + "_" + str(self.idx) + "." + "csv"
         miss_fpath = os.path.join(self.miss_folder, miss_file)
         df.to_csv(miss_fpath, index=False, encoding="utf-8")
