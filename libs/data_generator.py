@@ -81,7 +81,7 @@ class Training(object):
         folder_create(self.train_root)
         for column in columns:
             # train/00_normal作成
-            train_folder = os.path.join(self.train_root, str(column))
+            train_folder = os.path.join(self.train_root, column)
             folder_create(train_folder)
             train_list = self.df_train[column].dropna()
 

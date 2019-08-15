@@ -35,7 +35,7 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
         # 同じ個人IDを持つ行を抽出
         queried_df = df[df[id_column] == ID]
         # 最初に見つかった分類ラベルを使用する
-        label = queried_df[label_column].values.tolist()[0]
+        label = queried_df[label_column].values.astype(str).tolist()[0]
         y_unique_list.append(label)
 
     # 個人IDと分類ラベルの対応を用いてデータ分割を行う
@@ -61,7 +61,7 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
-            label_list = queried_df[label_column].values.tolist()
+            label_list = queried_df[label_column].values.astype(str).tolist()
             for filename, label in zip(filename_list, label_list):
                 label_filelist4Train_dic[label].append(filename)
 
@@ -69,7 +69,7 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
-            label_list = queried_df[label_column].values.tolist()
+            label_list = queried_df[label_column].values.astype(str).tolist()
             for filename, label in zip(filename_list, label_list):
                 label_filelist4Test_dic[label].append(filename)
 
@@ -78,7 +78,7 @@ def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
 
     # 分割情報が書かれたcsvを保存するフォルダ
     folder_create(split_info_folder)
-    unique_label_list = df[label_column].unique().tolist()
+    unique_label_list = df[label_column].unique().astype(str).tolist()
 
     df_train_list = []
     df_test_list = []
@@ -159,7 +159,7 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
-            label_list = queried_df[label_column].values.tolist()
+            label_list = queried_df[label_column].values.astype(str).tolist()
             for filename, label in zip(filename_list, label_list):
                 splited_filelist_for_train.append(filename)
                 splited_tergetlist_for_train.append(label)
@@ -168,7 +168,7 @@ def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
             # 同じ個人IDを持つ行を抽出
             queried_df = df[df[id_column] == ID]
             filename_list = queried_df[filename_column].values.tolist()
-            label_list = queried_df[label_column].values.tolist()
+            label_list = queried_df[label_column].values.astype(str).tolist()
             for filename, label in zip(filename_list, label_list):
                 splited_filelist_for_test.append(filename)
                 splited_tergetlist_for_test.append(label)

@@ -87,8 +87,8 @@ def main():
     # 設定ファイルで指定したcsvファイルを読み込み
     df = pd.read_csv(options['CSV']['csv_filename'])
 
-    # 分類ラベルをリスト化し、リストの長さを調べて分類数とする
-    label_list = df[options['CSV']['label_column']].unique().tolist()
+    # 分類ラベル(文字列)をリスト化し、リストの長さを調べて分類数とする
+    label_list = df[options['CSV']['label_column']].unique().astype(str).tolist()
     classes = len(label_list)
     printWithDate(f'{classes} classes found')
 
@@ -99,11 +99,11 @@ def main():
             # 分類ラベルにpositive_labelが無い場合、エラーを出して終了する
             error.positive_label_not_found(positive_label)
         for label in label_list:
-            if str(label) == positive_label:
+            if label == positive_label:
                 printWithDate(f'positive label is \"{label}\".')
             else:
                 printWithDate(f'negative label is \"{label}\".')
-                negative_label = str(label)
+                negative_label = label
         # negative_labelが先(0), positive_labelが後(1)に来るようにlabel_listを上書きする
         label_list = [negative_label, positive_label]
 
@@ -265,7 +265,6 @@ def main():
             'Validation', 'k'), cross_file)
         if PIC_MODE == 0:
             summary_analysis_binary(miss_file, summary_file, fig_file,
-                                    label_list,
                                     str(options['Analysis']['positive_label']),
                                     options.getfloat('Analysis', 'alpha'))
         elif PIC_MODE == 1:

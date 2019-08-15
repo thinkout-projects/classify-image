@@ -35,7 +35,7 @@ class Miss_classify(object):
         # class名をキーとしてAI解答リスト([0.1, 0.9], [0.8, 0.2])を値に持つ辞書
         class_score_dic = {}
         for class_name in self.class_list:
-            class_score_dic[str(class_name)] = []
+            class_score_dic[class_name] = []
 
         for pred, true in zip(self.y_pred, self.y_val):
             # pred_ansはfileごとの確率の羅列
@@ -47,7 +47,7 @@ class Miss_classify(object):
             true_list.append(true_ans)
 
             for idx, class_name in enumerate(self.class_list):
-                class_score_dic[str(class_name)].append(pred[idx])
+                class_score_dic[class_name].append(pred[idx])
         return pred_list, true_list, class_score_dic
 
     def miss_csv_making(self):
@@ -140,7 +140,7 @@ def miss_summarize(miss_folder, miss_file):
 
 
 def summary_analysis_binary(miss_summary_file, summary_file, roc_fig,
-                            label_list, positive_label, alpha):
+                            positive_label, alpha):
     df = pd.read_csv(miss_summary_file, encoding="utf-8")
     # libs/utils/utils.pyのfpath_tag_making()により、
     # 陰性は0, 陽性は1のタグが付けられることは確定している
