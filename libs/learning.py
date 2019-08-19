@@ -20,11 +20,12 @@ class Learning(Training):
     '''
 
     def __init__(self, folder_names, idx,
-                 pic_mode, train_num_mode_dic, size, classes, args_of_IDG, BATCH_SIZE, model_folder, model,
-                 X_val, y_val, epochs):
+                 pic_mode, train_num_mode_dic, size, classes, positive_label,
+                 args_of_IDG, BATCH_SIZE, model_folder, model,
+                 X_val, y_val, epochs, df_train):
         super().__init__(folder_names, idx,
                          pic_mode, train_num_mode_dic, size, classes,
-                         args_of_IDG, BATCH_SIZE)
+                         positive_label, args_of_IDG, BATCH_SIZE, df_train)
         self.model_folder = model_folder
         self.model = model
         self.pic_mode = pic_mode
@@ -71,7 +72,8 @@ class Learning(Training):
                               patience=20, verbose=1, mode='auto')
 
         # fpath_list,tag_listを作成する
-        fpath_list, tag_array = fpath_tag_making(self.train_root, self.classes)
+        fpath_list, tag_array = fpath_tag_making(self.train_root, self.classes,
+                                                 self.positive_label)
         # balance = Learning.balance_making(self)
 
         # 実際に学習⇒historyを作成

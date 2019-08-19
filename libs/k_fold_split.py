@@ -1,172 +1,219 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 層化k分割の交差検証
+# データセットの交差検証
 
-import os
-import numpy as np
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from .utils.folder import folder_create
-from .utils.utils import printWithDate
+from tqdm import tqdm
 
 
-class Split:
-    def __init__(self, k, source_folder, dataset_folder):
-        '''
-        コンストラクタ、分割数、元フォルダ、出力先のデータセットフォルダを
-        '''
+def stratified_k_fold(k, csv_config, split_info_folder, df, hasID):
+    '''
+    層化k分割を行い、分割情報をcsvに保存する
+    image_classifier.pyで使うことを想定
+    '''
 
-        self.k = k
-        self.source_folder = source_folder
-        self.dataset_folder = dataset_folder
-        self.random_seed = 1
+    RANDOM_SEED = 1
 
-    def k_fold_split(self):
-        '''
-        画像用フォルダ
-        '''
-        folder_create(self.dataset_folder)
-        # 00_normal,01_Glaなど
-        folder_list = os.listdir(self.source_folder)
-        nb_classes = len(folder_list)
-        X = []
-        y = []
-        for i, folder in enumerate(folder_list):
-            # img/00_normal
-            folder_path = os.path.join(self.source_folder, folder)
-            file_list = os.listdir(folder_path)
-            tag_list = [i for x in range(len(file_list))]
-            X.extend(file_list)
-            y.extend(tag_list)
+    filename_column = csv_config["image_filename_column"]
+    label_column = csv_config["label_column"]
 
-        X = np.array(X)
-        y = np.array(y)
+    # ID列がない場合はファイル名列をID列として扱う
+    if hasID:
+        id_column = csv_config["ID_column"]
+    else:
+        id_column = filename_column
 
-        # shuffleする、リストにスプリット順に、保存されていく。
-        skf = StratifiedKFold(n_splits=self.k, shuffle=True,
-                              random_state=self.random_seed)
-        train_list = []
-        test_list = []
-        for (i, (train_index, test_index)) in enumerate(skf.split(X, y)):
-            train_folder_list = [[] for i in range(nb_classes)]
-            test_folder_list = [[] for i in range(nb_classes)]
-            for index in train_index:
-                filename = X[index]
-                tag = y[index]
-                train_folder_list[tag].append(filename)
-            for index in test_index:
-                filename = X[index]
-                tag = y[index]
-                test_folder_list[tag].append(filename)
-            train_list.append(train_folder_list)
-            test_list.append(test_folder_list)
+    # ID_uniqueは個人ID, y_uniqueは分類ラベルのリスト
+    # 個人IDと分類ラベルは対応し、ID_uniqueは一意である
+    # [！] 同じ個人IDは全て同じ分類ラベルを持っている仮定に基づく
+    ID_unique_list = df[id_column].unique().tolist()
+    y_unique_list = []
+    for ID in tqdm(ID_unique_list, desc="finding same ID"):
+        # 同じ個人IDを持つ行を抽出
+        queried_df = df[df[id_column] == ID]
+        # 最初に見つかった分類ラベルを使用する
+        label = queried_df[label_column].values.astype(str).tolist()[0]
+        y_unique_list.append(label)
 
-        # スプリット順にcsvに出力
-        # trainとtestは別ファイル
-        # 00_normalみたいに出力されていく。
-        for idx in range(self.k):
-            df_train = pd.DataFrame()
-            df_test = pd.DataFrame()
+    # 個人IDと分類ラベルの対応を用いてデータ分割を行う
+    skf = StratifiedKFold(n_splits=k, shuffle=True,
+                          random_state=RANDOM_SEED)
+    filelist_for_train = []
+    filelist_for_test = []
+    for (train_index, test_index) in tqdm(skf.split(ID_unique_list,
+                                                    y_unique_list),
+                                          desc="splitting train/test"):
+        IDs_for_train = []
+        IDs_for_test = []
+        for id_index in train_index:
+            IDs_for_train.append(ID_unique_list[id_index])
+        for id_index in test_index:
+            IDs_for_test.append(ID_unique_list[id_index])
 
-            # 行（フォルダ）ごとに列を追加していく。
-            for col_idx in range(nb_classes):
-                folder_name = folder_list[col_idx]
-                train_name = train_list[idx][col_idx]
-                ds_train = pd.Series(train_name)
-                test_name = test_list[idx][col_idx]
-                ds_test = pd.Series(test_name)
-                df_train = pd.concat([df_train, pd.DataFrame(
-                    ds_train, columns=[folder_name])], axis=1)
-                df_test = pd.concat([df_test, pd.DataFrame(
-                    ds_test, columns=[folder_name])], axis=1)
+        # 分類ラベルをkey、ファイル名のリストをvalueとした辞書
+        label_filelist4Train_dic = {label: [] for label in y_unique_list}
+        label_filelist4Test_dic = {label: [] for label in y_unique_list}
 
-            df_train.to_csv(self.dataset_folder + "/"
-                            + "train" + "_" + str(idx) + ".csv",
-                            index=False, encoding="utf-8")
-            df_test.to_csv(self.dataset_folder + "/"
-                           + "test" + "_" + str(idx) + ".csv",
-                           index=False, encoding="utf-8")
-        return
+        for ID in tqdm(IDs_for_train, desc="splitting train"):
+            # 同じ個人IDを持つ行を抽出
+            queried_df = df[df[id_column] == ID]
+            filename_list = queried_df[filename_column].values.tolist()
+            label_list = queried_df[label_column].values.astype(str).tolist()
+            for filename, label in zip(filename_list, label_list):
+                label_filelist4Train_dic[label].append(filename)
 
-    def k_fold_split_unique(self):
-        '''
-        画像用フォルダ IDを考慮した分割
-        '''
-        folder_create(self.dataset_folder)
-        # 00_normal,01_Glaなど
-        folder_list = os.listdir(self.source_folder)
-        nb_classes = len(folder_list)
-        X = []
-        y = []
-        printWithDate("spliting - loop 1/4")
-        for i, folder in enumerate(folder_list):
-            # img/00_normal
-            folder_path = os.path.join(self.source_folder, folder)
-            file_list = os.listdir(folder_path)
-            tag_list = [i for x in range(len(file_list))]
-            X.extend(file_list)
-            y.extend(tag_list)
+        for ID in tqdm(IDs_for_test, desc="splitting train"):
+            # 同じ個人IDを持つ行を抽出
+            queried_df = df[df[id_column] == ID]
+            filename_list = queried_df[filename_column].values.tolist()
+            label_list = queried_df[label_column].values.astype(str).tolist()
+            for filename, label in zip(filename_list, label_list):
+                label_filelist4Test_dic[label].append(filename)
 
-        # ファイル名が "患者ID_画像ID" になっていると仮定
-        # 患者IDのみ抽出
-        X_unique = []
-        y_unique = []
-        printWithDate("spliting - loop 2/4")
-        for (i, j) in zip(X, y):
-            if((i[:-6] in X_unique) is False):
-                X_unique.append(i[:-6])
-                y_unique.append(j)
+        filelist_for_train.append(label_filelist4Train_dic)
+        filelist_for_test.append(label_filelist4Test_dic)
 
-        X_unique = np.array(X_unique)
-        y_unique = np.array(y_unique)
-        # shuffleする、リストにスプリット順に、保存されていく。
-        skf = StratifiedKFold(n_splits=self.k, shuffle=True,
-                              random_state=self.random_seed)
-        train_list = []
-        test_list = []
-        # 患者IDのみでデータ分割
-        printWithDate("spliting - loop 3/4")
-        for (i, (train_index, test_index)) in enumerate(skf.split(X_unique,
-                                                                  y_unique)):
-            train_folder_list = [[] for i in range(nb_classes)]
-            test_folder_list = [[] for i in range(nb_classes)]
-            for index in train_index:
-                # 患者IDが同じデータを探し，リストに入れる(非効率なので要修正)
-                for (filename, tag) in zip(X, y):
-                    if(filename[:-6] == X_unique[index]):
-                        train_folder_list[tag].append(filename)
-            for index in test_index:
-                # 患者IDが同じデータを探し，リストに入れる(非効率なので要修正)
-                for (filename, tag) in zip(X, y):
-                    if(filename[:-6] == X_unique[index]):
-                        test_folder_list[tag].append(filename)
-            train_list.append(train_folder_list)
-            test_list.append(test_folder_list)
+    # 分割情報が書かれたcsvを保存するフォルダ
+    folder_create(split_info_folder)
+    unique_label_list = df[label_column].unique().astype(str).tolist()
 
-        # スプリット順にcsvに出力
-        # trainとtestは別ファイル
-        # 00_normalみたいに出力されていく。
-        printWithDate("spliting - loop 4/4")
-        for idx in range(self.k):
-            df_train = pd.DataFrame()
-            df_test = pd.DataFrame()
-            # 行（フォルダ）ごとに列を追加していく。
-            for col_idx in range(nb_classes):
-                folder_name = folder_list[col_idx]
-                train_name = train_list[idx][col_idx]
-                ds_train = pd.Series(train_name)
-                test_name = test_list[idx][col_idx]
-                ds_test = pd.Series(test_name)
-                df_train = pd.concat([df_train, pd.DataFrame(
-                    ds_train, columns=[folder_name])], axis=1)
-                df_test = pd.concat([df_test, pd.DataFrame(
-                    ds_test, columns=[folder_name])], axis=1)
+    df_train_list = []
+    df_test_list = []
 
-            df_train.to_csv(self.dataset_folder + "/"
-                            + "train" + "_" + str(idx) + ".csv",
-                            index=False, encoding="utf-8")
-            df_test.to_csv(self.dataset_folder + "/"
-                           + "test" + "_" + str(idx) + ".csv",
-                           index=False, encoding="utf-8")
-        return
+    # スプリット順にcsvに出力
+    for idx in range(k):
+        df_train = pd.DataFrame()
+        df_test = pd.DataFrame()
+        # 行（分類ラベル）ごとに列(ファイル名)を追加していく
+        for label in unique_label_list:
+            train_name = filelist_for_train[idx][label]
+            ds_train = pd.Series(train_name)
+            df_train = pd.concat([df_train,
+                                  pd.DataFrame(ds_train, columns=[label])],
+                                 axis=1)
+
+            test_name = filelist_for_test[idx][label]
+            ds_test = pd.Series(test_name)
+            df_test = pd.concat([df_test,
+                                 pd.DataFrame(ds_test, columns=[label])],
+                                axis=1)
+
+        df_train.to_csv(f"{split_info_folder}/train_{idx}.csv",
+                        index=False, encoding="utf-8")
+        df_test.to_csv(f"{split_info_folder}/test_{idx}.csv",
+                       index=False, encoding="utf-8")
+
+        df_train_list.append(df_train)
+        df_test_list.append(df_test)
+
+    return df_train_list, df_test_list
+
+
+def simple_k_fold(k, csv_config, split_info_folder, df, hasID):
+    '''
+    k分割交差検証を行い、分割情報をcsvに保存する
+    image_regressor.pyで使うことを想定
+    '''
+
+    RANDOM_SEED = 1
+    filename_column = csv_config["image_filename_column"]
+    label_column = csv_config["label_column"]
+
+    # ID列がない場合はファイル名列をID列として扱う
+    if hasID:
+        id_column = csv_config["ID_column"]
+    else:
+        id_column = filename_column
+
+    # ID_uniqueは一意な個人IDのリスト
+    ID_unique_list = df[id_column].unique().tolist()
+    for ID in tqdm(ID_unique_list, desc="finding same ID"):
+        # 同じ個人IDを持つ行を抽出
+        queried_df = df[df[id_column] == ID]
+
+    # 個人IDを用いてデータ分割を行う
+    kf = KFold(n_splits=k, shuffle=True,
+               random_state=RANDOM_SEED)
+    filelist_for_train = []
+    filelist_for_test = []
+    tergetlist_for_train = []
+    tergetlist_for_test = []
+    for (train_index, test_index) in tqdm(kf.split(ID_unique_list),
+                                          desc="splitting train/test"):
+        IDs_for_train = []
+        IDs_for_test = []
+        splited_filelist_for_train = []
+        splited_filelist_for_test = []
+        splited_tergetlist_for_train = []
+        splited_tergetlist_for_test = []
+
+        for id_index in train_index:
+            IDs_for_train.append(ID_unique_list[id_index])
+        for id_index in test_index:
+            IDs_for_test.append(ID_unique_list[id_index])
+
+        for ID in tqdm(IDs_for_train, desc="splitting train"):
+            # 同じ個人IDを持つ行を抽出
+            queried_df = df[df[id_column] == ID]
+            filename_list = queried_df[filename_column].values.tolist()
+            label_list = queried_df[label_column].values.astype(str).tolist()
+            for filename, label in zip(filename_list, label_list):
+                splited_filelist_for_train.append(filename)
+                splited_tergetlist_for_train.append(label)
+
+        for ID in tqdm(IDs_for_test, desc="splitting test"):
+            # 同じ個人IDを持つ行を抽出
+            queried_df = df[df[id_column] == ID]
+            filename_list = queried_df[filename_column].values.tolist()
+            label_list = queried_df[label_column].values.astype(str).tolist()
+            for filename, label in zip(filename_list, label_list):
+                splited_filelist_for_test.append(filename)
+                splited_tergetlist_for_test.append(label)
+
+        filelist_for_train.append(splited_filelist_for_train)
+        filelist_for_test.append(splited_filelist_for_test)
+        tergetlist_for_train.append(splited_tergetlist_for_train)
+        tergetlist_for_test.append(splited_tergetlist_for_test)
+
+    # 分割情報が書かれたcsvを保存するフォルダ
+    folder_create(split_info_folder)
+
+    df_train_list = []
+    df_test_list = []
+
+    # スプリット順にcsvに出力
+    for idx in range(k):
+        df_train = pd.DataFrame()
+        df_test = pd.DataFrame()
+
+        # 列(ファイル名)を追加していく
+        train_name = filelist_for_train[idx]
+        terget_val = tergetlist_for_train[idx]
+        ds_train = pd.Series(train_name)
+        ds_terget = pd.Series(terget_val)
+        df_train = pd.concat([df_train,
+                              pd.DataFrame(ds_train, columns=["filename"]),
+                              pd.DataFrame(ds_terget, columns=["terget"])],
+                             axis=1)
+
+        test_name = filelist_for_test[idx]
+        terget_val = tergetlist_for_test[idx]
+        ds_test = pd.Series(test_name)
+        ds_terget = pd.Series(terget_val)
+        df_test = pd.concat([df_test,
+                             pd.DataFrame(ds_test, columns=["filename"]),
+                             pd.DataFrame(ds_terget, columns=["terget"])],
+                            axis=1)
+
+        df_train.to_csv(f"{split_info_folder}/train_{idx}.csv",
+                        index=False, encoding="utf-8")
+        df_test.to_csv(f"{split_info_folder}/test_{idx}.csv",
+                       index=False, encoding="utf-8")
+
+        df_train_list.append(df_train)
+        df_test_list.append(df_test)
+
+    return df_train_list, df_test_list

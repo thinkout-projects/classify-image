@@ -20,10 +20,10 @@ from keras.backend.tensorflow_backend import set_session
 from keras.backend.tensorflow_backend import clear_session
 
 # folder関連
-from libs.utils.folder import folder_create, folder_delete, folder_clean
+from libs.utils.folder import folder_create, folder_delete
 
 # 分割(層化k分割の交差検証)
-from libs.k_fold_split import Split
+from libs.k_fold_split import simple_k_fold
 
 # 評価用データの作成および読みこみ
 # train/00_normal/画像ファイル)
@@ -52,6 +52,9 @@ from libs.utils.utils import check_options
 
 import libs.error as error
 
+# pandasを使っcsvファイルの読み込みに対応
+import pandas as pd
+
 PIC_MODE = 2
 
 
@@ -79,28 +82,38 @@ def main():
     image_size = [options.getint('ImageSize', 'width'),
                   options.getint('ImageSize', 'height')]
 
-    # desktop.iniの削除
-    folder_clean(options['FolderName']['dataset'])
+    # 設定ファイルで指定したcsvファイルを読み込み
+    df = pd.read_csv(options['CSV']['csv_filename'])
 
-    # 分類数を調べる。
-    classes = len(os.listdir(options['FolderName']['dataset']))
-    printWithDate(f'{classes} classes found')
+    # 分類ラベルをリスト化し、リストの長さを調べて分類数とする
+    # TODO: PIC_MODEを廃止して
+    #       classes=1: 回帰, classes=2: 2値分類, classes>=3: 多値分類
+    #       と扱うようにする
+    label_list = ["regression"]
+    classes = len(label_list)
+    printWithDate(f'regression mode')
 
     # ここで、データ拡張の方法を指定。
-    folder_list = os.listdir(options['FolderName']['dataset'])
+    # TODO: 回帰の目標値によって増強方法を変更出来るようにする
+    #       例) 視力0.0〜0.8は[6,1]、視力0.8〜は[3,1]
     train_num_mode_dic = {}
+    for label in label_list:
+        train_num_mode_dic[label] = [options.getint('DataGenerate', 'num_of_augs'),
+                                     options.getboolean('DataGenerate', 'use_flip')]
 
-    # gradeごとにデータ拡張の方法を変える場合はここを変更
-    for i, folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [options.getint('DataGenerate', 'num_of_augs'),
-                                      options.getboolean('DataGenerate', 'use_flip')]
+    # 層化k分割
+    if options['CSV']['ID_column'] == "None":
+        hasID = False
+    else:
+        hasID = True
+    printWithDate(f"hasID = {hasID}")
 
-    # 分割
     printWithDate("spliting dataset")
-    split = Split(options.getint('Validation', 'k'),
-                  options['FolderName']['dataset'],
-                  options['FolderName']['split_info'])
-    split.k_fold_split_unique()
+    df_train_list, df_test_list = \
+        simple_k_fold(options.getint('Validation', 'k'),
+                      options['CSV'],
+                      options['FolderName']['split_info'],
+                      df, hasID)
 
     # 分割ごとに
     for idx in range(options.getint('Validation', 'k')):
@@ -112,9 +125,10 @@ def main():
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
         validation = Validation(image_size,
                                 options['FolderName'],
-                                classes, PIC_MODE, idx)
-        validation.pic_df_test()
-        X_val, y_val, W_val = validation.pic_gen_data()
+                                classes, options['Analysis']['positive_label'],
+                                PIC_MODE, idx, df_test_list[idx])
+        validation.pic_df_test_reg()
+        X_val, y_val, W_val = validation.pic_gen_data_reg()
 
         # 訓練用データについて
         printWithDate("making data for training",
@@ -122,9 +136,11 @@ def main():
         training = Training(options['FolderName'], idx, PIC_MODE,
                             train_num_mode_dic,
                             image_size, classes,
+                            options['Analysis']['positive_label'],
                             options['ImageDataGenerator'],
-                            options.getint('HyperParameter', 'batch_size'))
-        training.pic_df_training()
+                            options.getint('HyperParameter', 'batch_size'),
+                            df_train_list[idx])
+        training.pic_df_training_reg()
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先にここで定義
@@ -176,10 +192,12 @@ def main():
             learning = Learning(options['FolderName'], idx, PIC_MODE,
                                 train_num_mode_dic,
                                 image_size, classes,
+                                options['Analysis']['positive_label'],
                                 options['ImageDataGenerator'],
                                 options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model, X_val, y_val,
-                                options.getint('HyperParameter', 'epochs'))
+                                options.getint('HyperParameter', 'epochs'),
+                                df_train_list[idx])
 
             # 訓練実行
             history = learning.learning_model()

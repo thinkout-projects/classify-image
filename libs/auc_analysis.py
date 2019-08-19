@@ -17,64 +17,63 @@ from sklearn.metrics import roc_curve, auc
 
 
 class Miss_classify(object):
-    def __init__(self, idx, y_pred, y_val, W_val, test_folder, miss_folder):
+    def __init__(self, idx, y_pred, y_val, W_val, miss_folder, label_list):
         self.idx = idx
+        # 2値分類のとき、y_pred, y_valは、陰性が0, 陽性が1を示す
         self.y_pred = y_pred
         self.y_val = y_val
         self.W_val = W_val
-        self.test_folder = test_folder
+        self.class_list = label_list
         self.miss_folder = miss_folder
 
-    # miss_detail・・・
-    # missは誤答数, true_listは[0, 1, 0, 0]のように示される正解番号リスト
-    # pred_listは[0. 1. 0. 1]のように示されるAI解答番号リスト
-    # score_listは[[0.1, 0.9], [0.8, 0.2]]のように示されるAI解答リスト
     def miss_detail(self):
-        miss = 0
-        pre_list = []
+        # pred_listは[0, 1, 0, 1]のように示されるAI解答番号リスト
+        pred_list = []
+        # true_listは[0, 1, 0, 0]のように示される正解番号リスト
         true_list = []
-        folder_list = os.listdir(self.test_folder)
-        nb_classes = len(folder_list)
-        score_list = [[] for x in range(nb_classes)]
-        # preはfileごとの確率の羅列
-        # pre_listはすべての問題のAIによる回答
-        for i, v in enumerate(self.y_pred):
-            pre_ans = v.argmax()
-            pre_list.append(pre_ans)
-            ans = self.y_val[i].argmax()
-            true_list.append(ans)
-            for idx in range(nb_classes):
-                score_list[idx].append(v[idx])
-            if pre_ans != ans:
-                miss += 1
-        return miss, pre_list, true_list, score_list
+        # class_score_dicは、
+        # class名をキーとしてAI解答リスト([0.1, 0.9], [0.8, 0.2])を値に持つ辞書
+        class_score_dic = {}
+        for class_name in self.class_list:
+            class_score_dic[class_name] = []
+
+        for pred, true in zip(self.y_pred, self.y_val):
+            # pred_ansはfileごとの確率の羅列
+            pred_ans = pred.argmax()
+            # pred_listはすべての問題のAIによる回答
+            pred_list.append(pred_ans)
+
+            true_ans = true.argmax()
+            true_list.append(true_ans)
+
+            for idx, class_name in enumerate(self.class_list):
+                class_score_dic[class_name].append(pred[idx])
+        return pred_list, true_list, class_score_dic
 
     def miss_csv_making(self):
         '''
         全てのファイルをフォルダごとにcsvファイルに書き込む
         '''
-
-        miss, pre_list, true_list, score_list = Miss_classify.miss_detail(self)
+        pred_list, true_list, class_score_dic = \
+            Miss_classify.miss_detail(self)
 
         # missフォルダ作成
         folder_create(self.miss_folder)
-        folder_list = os.listdir(self.test_folder)
-        # nb_classes = len(folder_list)
 
         # クラス分の[]を用意する。
         file_name_list = []
-        for num in range(len(pre_list)):
+        for num in range(len(pred_list)):
             # y_val[num]は当該ファイルの正答のベクトル、argmaxで正答番号がわかる
-            # W_val[num]は当該ファイルのパス、\\で分割し-1にすることで一番最後のファイル名が分かる
-            file_name_list.append(self.W_val[num].split("\\")[-1])
+            # W_val[num]は当該ファイルのパス
+            file_name_list.append(os.path.basename(self.W_val[num]))
 
         df = pd.DataFrame()
         df["filename"] = file_name_list
         df["true"] = true_list
-        df["predict"] = pre_list
+        df["predict"] = pred_list
 
-        for i, score in enumerate(score_list):
-            df[folder_list[i]] = score
+        for class_name, score_list in class_score_dic.items():
+            df[str(class_name)] = score_list
         miss_file = "miss" + "_" + str(self.idx) + "." + "csv"
         miss_fpath = os.path.join(self.miss_folder, miss_file)
         df.to_csv(miss_fpath, index=False, encoding="utf-8")
@@ -89,19 +88,14 @@ class Miss_regression(object):
         self.W_val = W_val
         self.miss_folder = miss_folder
 
-    # miss_detail・・・
-    # missは誤答数, true_listは[0, 1, 0, 0]のように示される正解番号リスト
-    # pred_listは[0. 1. 0. 1]のように示されるAI解答番号リスト
-    # score_listは[[0.1, 0.9], [0.8, 0.2]]のように示されるAI解答リスト
     def miss_csv_making(self):
-
         # missフォルダ作成
         folder_create(self.miss_folder)
 
         # クラス分の[]を用意する。
         file_name_list = []
         for W in self.W_val:
-            file_name_list.append(W.split("\\")[-1])
+            file_name_list.append(os.path.basename(W))
 
         df = pd.DataFrame()
         df["filename"] = file_name_list
@@ -146,14 +140,18 @@ def miss_summarize(miss_folder, miss_file):
 
 
 def summary_analysis_binary(miss_summary_file, summary_file, roc_fig,
-                            img_folder, alpha):
+                            positive_label, alpha):
     df = pd.read_csv(miss_summary_file, encoding="utf-8")
+    # libs/utils/utils.pyのfpath_tag_making()により、
+    # 陰性は0, 陽性は1のタグが付けられることは確定している
     df0 = df[df["true"] == 0]
     df1 = df[df["true"] == 1]
     n_normal = len(df0)
     n_des = len(df1)
-    y_pred = np.array(df[os.listdir(img_folder)[1]])
+
+    # y_true, y_predはsklearn.metrics.roc_auc_scoreのy_true, y_scoreに渡される
     y_true = np.array(df["true"])
+    y_pred = np.array(df[str(positive_label)])
 
     # AUCについて
     # y_pred, y_trueを用いて95%信頼区間を求める
@@ -223,12 +221,11 @@ def roc_auc_ci(y_true, y_score, alpha, positive=1):
     return [AUC, lower, upper]
 
 
-def summary_analysis_categorical(miss_summary_file, summary_file, img_folder,
+def summary_analysis_categorical(miss_summary_file, summary_file, label_list,
                                  alpha):
     df = pd.read_csv(miss_summary_file, encoding="utf-8")
-    cols = os.listdir(img_folder)
     df_out = pd.DataFrame()
-    for i, col in enumerate(cols):
+    for i, label in enumerate(label_list):
         df0 = df[df["true"] == i]
         n_0 = len(df0)
         df00 = df0[df0["predict"] == i]
@@ -236,9 +233,9 @@ def summary_analysis_categorical(miss_summary_file, summary_file, img_folder,
         accuracy = float(k_0/n_0)
         accuracy_low, accuracy_up = clopper_pearson(k_0, n_0, alpha)
         accuracies = [accuracy, accuracy_low, accuracy_up]
-        print(col)
+        print(label)
         print(accuracies)
-        df_out[col] = accuracies
+        df_out[label] = accuracies
     df_out.to_csv(summary_file, index=False, encoding="utf-8")
     return
 

@@ -23,10 +23,10 @@ from keras.backend.tensorflow_backend import set_session
 from keras.backend.tensorflow_backend import clear_session
 
 # folder関連
-from libs.utils.folder import folder_create, folder_delete, folder_clean
+from libs.utils.folder import folder_create, folder_delete
 
 # 分割(層化k分割の交差検証)
-from libs.k_fold_split import Split
+from libs.k_fold_split import stratified_k_fold
 
 # 評価用データの作成および読みこみ
 # train/00_normal/画像ファイル)
@@ -56,6 +56,9 @@ from libs.utils.utils import check_options
 
 import libs.error as error
 
+# pandasを使っcsvファイルの読み込みに対応
+import pandas as pd
+
 
 def main():
     printWithDate("main() function is started")
@@ -81,12 +84,28 @@ def main():
     image_size = [options.getint('ImageSize', 'width'),
                   options.getint('ImageSize', 'height')]
 
-    # desktop.iniの削除
-    folder_clean(options['FolderName']['dataset'])
+    # 設定ファイルで指定したcsvファイルを読み込み
+    df = pd.read_csv(options['CSV']['csv_filename'])
 
-    # 分類数を調べる。
-    classes = len(os.listdir(options['FolderName']['dataset']))
+    # 分類ラベル(文字列)をリスト化し、リストの長さを調べて分類数とする
+    label_list = df[options['CSV']['label_column']].unique().astype(str).tolist()
+    classes = len(label_list)
     printWithDate(f'{classes} classes found')
+
+    # 2値分類の場合
+    if classes == 2:
+        positive_label = str(options['Analysis']['positive_label'])
+        if positive_label not in label_list:
+            # 分類ラベルにpositive_labelが無い場合、エラーを出して終了する
+            error.positive_label_not_found(positive_label)
+        for label in label_list:
+            if label == positive_label:
+                printWithDate(f'positive label is \"{label}\".')
+            else:
+                printWithDate(f'negative label is \"{label}\".')
+                negative_label = label
+        # negative_labelが先(0), positive_labelが後(1)に来るようにlabel_listを上書きする
+        label_list = [negative_label, positive_label]
 
     # pic_modeを決める
     if classes == 2:
@@ -95,20 +114,25 @@ def main():
         PIC_MODE = 1
 
     # ここで、データ拡張の方法を指定。
-    folder_list = os.listdir(options['FolderName']['dataset'])
     train_num_mode_dic = {}
-
     # gradeごとにデータ拡張の方法を変える場合はここを変更
-    for i, folder in enumerate(folder_list):
-        train_num_mode_dic[folder] = [options.getint('DataGenerate', 'num_of_augs'),
-                                      options.getboolean('DataGenerate', 'use_flip')]
+    for label in label_list:
+        train_num_mode_dic[label] = [options.getint('DataGenerate', 'num_of_augs'),
+                                     options.getboolean('DataGenerate', 'use_flip')]
 
-    # 分割
+    # 層化k分割
+    if options['CSV']['ID_column'] == "None":
+        hasID = False
+    else:
+        hasID = True
+    printWithDate(f"hasID = {hasID}")
+
     printWithDate("spliting dataset")
-    split = Split(options.getint('Validation', 'k'),
-                  options['FolderName']['dataset'],
-                  options['FolderName']['split_info'])
-    split.k_fold_split_unique()
+    df_train_list, df_test_list = \
+        stratified_k_fold(options.getint('Validation', 'k'),
+                          options['CSV'],
+                          options['FolderName']['split_info'],
+                          df, hasID)
 
     # 分割ごとに
     for idx in range(options.getint('Validation', 'k')):
@@ -120,7 +144,8 @@ def main():
                       f"[{idx + 1}/{options.getint('Validation', 'k')}]")
         validation = Validation(image_size,
                                 options['FolderName'],
-                                classes, PIC_MODE, idx)
+                                classes, options['Analysis']['positive_label'],
+                                PIC_MODE, idx, df_test_list[idx])
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
@@ -130,8 +155,10 @@ def main():
         training = Training(options['FolderName'], idx, PIC_MODE,
                             train_num_mode_dic,
                             image_size, classes,
+                            options['Analysis']['positive_label'],
                             options['ImageDataGenerator'],
-                            options.getint('HyperParameter', 'batch_size'))
+                            options.getint('HyperParameter', 'batch_size'),
+                            df_train_list[idx])
         training.pic_df_training()
 
         # model定義
@@ -189,10 +216,12 @@ def main():
             learning = Learning(options['FolderName'], idx, PIC_MODE,
                                 train_num_mode_dic,
                                 image_size, classes,
+                                options['Analysis']['positive_label'],
                                 options['ImageDataGenerator'],
                                 options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model, X_val, y_val,
-                                options.getint('HyperParameter', 'epochs'))
+                                options.getint('HyperParameter', 'epochs'),
+                                df_train_list[idx])
 
             # 訓練実行
             history = learning.learning_model()
@@ -203,8 +232,7 @@ def main():
             model_load(model, model_folder, idx)
             y_pred = model.predict(X_val)
             Miss_classify(idx, y_pred, y_val, W_val,
-                          options['FolderName']['test'],
-                          miss_folder).miss_csv_making()
+                          miss_folder, label_list).miss_csv_making()
 
             printWithDate(
                 f"Analysis finished [{idx + 1}/{options.getint('Validation', 'k')}]")
@@ -237,11 +265,11 @@ def main():
             'Validation', 'k'), cross_file)
         if PIC_MODE == 0:
             summary_analysis_binary(miss_file, summary_file, fig_file,
-                                    options['FolderName']['dataset'],
+                                    str(options['Analysis']['positive_label']),
                                     options.getfloat('Analysis', 'alpha'))
         elif PIC_MODE == 1:
             summary_analysis_categorical(miss_file, summary_file,
-                                         options['FolderName']['dataset'],
+                                         label_list,
                                          options.getfloat('Analysis', 'alpha'))
 
     printWithDate("main() function is end")
