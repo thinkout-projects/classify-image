@@ -5,7 +5,7 @@
 
 import os
 import glob
-from libs.models import Models
+
 
 def model_compile(model, loss, optimizer):
     model.compile(loss=loss, optimizer=optimizer, metrics=["accuracy"])
