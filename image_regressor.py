@@ -41,7 +41,7 @@ from libs.data_generator import Training, Validation
 from libs.learning import Learning, plot_hist
 
 # 評価、結果の分析
-from libs.utils.model import model_load, model_delete, model_selector
+from libs.utils.model import model_load, model_delete
 from libs.auc_analysis import Miss_regression
 from libs.auc_analysis import miss_summarize
 from libs.auc_analysis import summary_analysis_regression
@@ -161,8 +161,7 @@ def main():
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
             model_ch = Models(image_size, classes, PIC_MODE)
-
-            model = model_selector(model_name, model_ch)
+            model = model_ch.choose(model_name)
 
             # optimizerはAdam
             optimizer = Adam(lr=0.0001)
