@@ -35,6 +35,29 @@ class Models(object):
         self.classes = classes
         self.pic_mode = pic_mode
 
+    def choose(self, model_name):
+        if model_name == 'VGG16':
+            model = self.vgg16()
+        elif model_name == 'VGG19':
+            model = self.vgg19()
+        elif model_name == 'DenseNet121':
+            model = self.dense121()
+        elif model_name == 'DenseNet169':
+            model = self.dense169()
+        elif model_name == 'DenseNet201':
+            model = self.dense201()
+        elif model_name == 'InceptionResNetV2':
+            model = self.inception_resnet2()
+        elif model_name == 'InceptionV3':
+            model = self.inception3()
+        elif model_name == 'ResNet50':
+            model = self.resnet50()
+        elif model_name == 'Xception':
+            model = self.xception()
+        elif model_name == 'LightWeight':
+            model = self.light_weight_model()
+        return model
+
     def inception_resnet2(self):
         input_tensor = Input(shape=(self.h, self.w, self.ch))
         design_model = InceptionResNetV2(
@@ -219,7 +242,7 @@ class Models(object):
                       output=top_model(vgg16_model.output))
         return model
 
-    def test_model(self):
+    def light_weight_model(self):
         '''
         laptopでも使用できる3層ネットワーク
         inputなどが正しいか評価するときに使用
