@@ -181,25 +181,7 @@ def main():
             # "VGG16","VGG19","DenseNet121","DenseNet169","DenseNet201",
             # "InceptionResNetV2","InceptionV3","ResNet50","Xception"
             model_ch = Models(image_size, classes, PIC_MODE)
-
-            if model_name == 'VGG16':
-                model = model_ch.vgg16()
-            elif model_name == 'VGG19':
-                model = model_ch.vgg19()
-            elif model_name == 'DenseNet121':
-                model = model_ch.dense121()
-            elif model_name == 'DenseNet169':
-                model = model_ch.dense169()
-            elif model_name == 'DenseNet201':
-                model = model_ch.dense201()
-            elif model_name == 'InceptionResNetV2':
-                model = model_ch.inception_resnet2()
-            elif model_name == 'InceptionV3':
-                model = model_ch.inception3()
-            elif model_name == 'ResNet50':
-                model = model_ch.resnet50()
-            elif model_name == 'Xception':
-                model = model_ch.xception()
+            model = model_ch.choose(model_name)
 
             # optimizerはSGD
             optimizer = SGD(lr=0.0001, decay=1e-6, momentum=0.9,

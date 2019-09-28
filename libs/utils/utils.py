@@ -63,7 +63,8 @@ def check_options(Options):
                 'InceptionResNetV2',
                 'InceptionV3',
                 'ResNet50',
-                'Xception'],
+                'Xception',
+                'LightWeight'],
                # ImageSize
                ['width',
                 'height'],
