@@ -78,8 +78,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=vgg16_model.input,
-                      output=top_model(vgg16_model.output))
+        model = Model(inputs=vgg16_model.input,
+                      outputs=top_model(vgg16_model.output))
         return model
 
     def vgg19(self):
@@ -98,8 +98,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(inputs=design_model.input,
+                      outputs=top_model(design_model.output))
         return model
 
     def dense121(self):
@@ -118,8 +118,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(inputs=design_model.input,
+                      outputs=top_model(design_model.output))
         return model
 
     def dense169(self):
@@ -138,8 +138,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(inputs=design_model.input,
+                      outputs=top_model(design_model.output))
         return model
 
     def dense201(self):
@@ -158,8 +158,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(inputs=design_model.input,
+                      outputs=top_model(design_model.output))
         return model
 
     def inception_resnet2(self):
@@ -178,8 +178,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(inputs=design_model.input,
+                      outputs=top_model(design_model.output))
         return model
 
     def inception3(self):
@@ -198,8 +198,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(inputs=design_model.input,
+                      outputs=top_model(design_model.output))
         return model
 
     def resnet50(self):
@@ -218,8 +218,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(inputs=design_model.input,
+                      outputs=top_model(design_model.output))
         return model
 
     def xception(self):
@@ -238,8 +238,8 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(inputs=design_model.input,
+                      outputs=top_model(design_model.output))
         return model
 
     def light_weight_model(self):
