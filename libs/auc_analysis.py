@@ -4,7 +4,6 @@
 # 2値分類、他クラス分類に関する結果表示(csv出力もする)
 
 import os
-# import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -14,6 +13,9 @@ from .utils.utils import clopper_pearson
 from .utils.folder import folder_create
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve, auc
+
+# モニターのないサーバーでも動作するように
+plt.switch_backend('agg')
 
 
 class Miss_classify(object):
