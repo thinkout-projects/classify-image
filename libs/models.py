@@ -58,14 +58,18 @@ class Models(object):
             model = self.light_weight_model()
         return model
 
-    def inception_resnet2(self):
+    def vgg16(self):
+        '''
+        VGG16(初期値Imagenet、非固定版)
+        '''
+
         input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = InceptionResNetV2(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        vgg16_model = VGG16(include_top=False,
+                            weights='imagenet', input_tensor=input_tensor)
 
         # FC層を構築
         top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
+        top_model.add(Flatten(input_shape=vgg16_model.output_shape[1:]))
         top_model.add(Dense(256, activation='relu'))
         top_model.add(Dropout(0.5))
         if(self.pic_mode != 2):
@@ -74,33 +78,13 @@ class Models(object):
             top_model.add(Dense(self.classes, activation='relu'))
 
         # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
+        model = Model(input=vgg16_model.input,
+                      output=top_model(vgg16_model.output))
         return model
 
-    def xception(self):
+    def vgg19(self):
         input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = Xception(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
-
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
-        else:
-            top_model.add(Dense(self.classes, activation='relu'))
-
-        # VGG16とFCを接続
-        model = Model(input=design_model.input,
-                      output=top_model(design_model.output))
-        return model
-
-    def inception3(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = InceptionV3(
+        design_model = VGG19(
             include_top=False, weights='imagenet', input_tensor=input_tensor)
 
         # FC層を構築
@@ -178,6 +162,46 @@ class Models(object):
                       output=top_model(design_model.output))
         return model
 
+    def inception_resnet2(self):
+        input_tensor = Input(shape=(self.h, self.w, self.ch))
+        design_model = InceptionResNetV2(
+            include_top=False, weights='imagenet', input_tensor=input_tensor)
+
+        # FC層を構築
+        top_model = Sequential()
+        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
+        top_model.add(Dense(256, activation='relu'))
+        top_model.add(Dropout(0.5))
+        if(self.pic_mode != 2):
+            top_model.add(Dense(self.classes, activation='softmax'))
+        else:
+            top_model.add(Dense(self.classes, activation='relu'))
+
+        # VGG16とFCを接続
+        model = Model(input=design_model.input,
+                      output=top_model(design_model.output))
+        return model
+
+    def inception3(self):
+        input_tensor = Input(shape=(self.h, self.w, self.ch))
+        design_model = InceptionV3(
+            include_top=False, weights='imagenet', input_tensor=input_tensor)
+
+        # FC層を構築
+        top_model = Sequential()
+        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
+        top_model.add(Dense(256, activation='relu'))
+        top_model.add(Dropout(0.5))
+        if(self.pic_mode != 2):
+            top_model.add(Dense(self.classes, activation='softmax'))
+        else:
+            top_model.add(Dense(self.classes, activation='relu'))
+
+        # VGG16とFCを接続
+        model = Model(input=design_model.input,
+                      output=top_model(design_model.output))
+        return model
+
     def resnet50(self):
         input_tensor = Input(shape=(self.h, self.w, self.ch))
         design_model = ResNet50(
@@ -198,9 +222,9 @@ class Models(object):
                       output=top_model(design_model.output))
         return model
 
-    def vgg19(self):
+    def xception(self):
         input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = VGG19(
+        design_model = Xception(
             include_top=False, weights='imagenet', input_tensor=input_tensor)
 
         # FC層を構築
@@ -216,30 +240,6 @@ class Models(object):
         # VGG16とFCを接続
         model = Model(input=design_model.input,
                       output=top_model(design_model.output))
-        return model
-
-    def vgg16(self):
-        '''
-        VGG16(初期値Imagenet、非固定版)
-        '''
-
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        vgg16_model = VGG16(include_top=False,
-                            weights='imagenet', input_tensor=input_tensor)
-
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=vgg16_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
-        else:
-            top_model.add(Dense(self.classes, activation='relu'))
-
-        # VGG16とFCを接続
-        model = Model(input=vgg16_model.input,
-                      output=top_model(vgg16_model.output))
         return model
 
     def light_weight_model(self):
