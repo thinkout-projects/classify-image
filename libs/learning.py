@@ -13,6 +13,9 @@ from .data_generator import Training
 from .utils.utils import fpath_tag_making
 # regression用に
 
+# モニターのないサーバーでも動作するように
+plt.switch_backend('agg')
+
 
 class Learning(Training):
     '''
