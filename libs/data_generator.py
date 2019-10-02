@@ -241,27 +241,17 @@ class Validation(object):
         fpath_list, tag_array = fpath_tag_making(self.test_root, self.classes,
                                                  self.positive_label)
         X_val = []
-        y_val = []
         for fpath in fpath_list:
             X = read_img(fpath, self.h, self.w)
             X_val.append(X)
-            if(self.pic_mode == 2):
-                # TODO: csv対応
-                y_val.append(int(os.path.basename(fpath).split("_")[0]))
 
         # 全てを再度array化する
         X_val = np.array(X_val)
-        if(self.pic_mode == 2):
-            y_val = np.array(y_val)
 
         # class数, validation dataがいくつか
         printWithDate(len(X_val), " files for validation")
         # validationのデータとlabel、ファイルパス
-        if(self.pic_mode != 2):
-            return (X_val, tag_array, fpath_list)
-        else:
-            # TODO: csv対応
-            return (X_val, y_val, fpath_list)
+        return (X_val, tag_array, fpath_list)
 
     def pic_df_test_reg(self):
         '''
