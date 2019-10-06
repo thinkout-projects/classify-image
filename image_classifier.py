@@ -135,7 +135,7 @@ def main():
                           df, hasID)
 
     # 分割ごとに
-    for idx in range(options.getint('Validation', 'k')):
+    for idx, (df_train, df_test) in enumerate(zip(df_train_list, df_test_list)):
         printWithDate("processing sprited dataset",
                       f"{idx + 1}/{options.getint('Validation', 'k')}")
 
@@ -145,7 +145,7 @@ def main():
         validation = Validation(image_size,
                                 options['FolderName'],
                                 classes, options['Analysis']['positive_label'],
-                                PIC_MODE, idx, df_test_list[idx])
+                                PIC_MODE, idx, df_test)
         validation.pic_df_test()
         X_val, y_val, W_val = validation.pic_gen_data()
 
@@ -158,7 +158,7 @@ def main():
                             options['Analysis']['positive_label'],
                             options['ImageDataGenerator'],
                             options.getint('HyperParameter', 'batch_size'),
-                            df_train_list[idx])
+                            df_train)
         training.pic_df_training()
 
         # model定義
@@ -203,7 +203,7 @@ def main():
                                 options.getint('HyperParameter', 'batch_size'),
                                 model_folder, model, X_val, y_val,
                                 options.getint('HyperParameter', 'epochs'),
-                                df_train_list[idx])
+                                df_train)
 
             # 訓練実行
             history = learning.learning_model()
