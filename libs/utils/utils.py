@@ -147,6 +147,8 @@ def fpath_tag_making_binary(root, positive_label):
     '''
     root/00_normal/画像を見に行く。
     filepathのリストとtagのカテゴリー化済みのarrayが出力される。
+
+    `positive_label`に一致するラベルに0、それ以外のラベルに1のタグを付ける。
     '''
 
     # train
@@ -178,6 +180,12 @@ def fpath_tag_making_categorical(root, classes):
     '''
     root/00_normal/画像を見に行く。
     filepathのリストとtagのカテゴリー化済みのarrayが出力される。
+
+    `os.listdir()`の順にタグを付ける。
+    XXX: `os.listdir()`で取得したリストの順番は不定(arbitrary)
+         cf. https://docs.python.org/3.6/library/os.html#os.listdir
+
+    FIXME: #21と同様の対応(sorted()を使う)が必要
     '''
 
     # train
@@ -206,7 +214,7 @@ def fpath_tag_making_categorical(root, classes):
 def fpath_making(root):
     '''
     root/00_normal/画像を見に行く。
-    filepathのリストとtagのカテゴリー化済みのarrayが出力される。
+    filepathのリストが出力される。
     '''
 
     # train

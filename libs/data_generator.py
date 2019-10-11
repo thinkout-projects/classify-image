@@ -177,7 +177,7 @@ class Training(object):
         return X_train, y_train
 
     @threadsafe_generator
-    def datagen(self, fpath_list, tag_array):  # data generator
+    def datagen(self, fpath_list, tag_array):
         while True:
             for i in range(0, len(fpath_list) - self.BATCH_SIZE,
                            self.BATCH_SIZE):
@@ -299,7 +299,6 @@ class Validation(object):
 
 
 # 画像データの増強・水増しをopencvのエフェクトを使って行う
-
 def data_augment(newfolder, file, src0, num_list, mode, terget=None):
     '''
     `newfolder`は保存先のフォルダ
