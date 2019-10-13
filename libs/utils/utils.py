@@ -6,10 +6,9 @@
 import os
 import pandas as pd
 import numpy as np
-# from scipy import stats
 import scipy
 import cv2
-from keras.utils import np_utils
+from tensorflow.keras.utils import to_categorical
 
 from pytz import timezone
 from datetime import datetime
@@ -170,7 +169,7 @@ def fpath_tag_making_binary(root, positive_label):
             tag_list.append(tag)
     fpath_list, tag_list = list_shuffle(fpath_list, tag_list, seed)
     tag_array = np.array(tag_list)
-    tag_array = np_utils.to_categorical(tag_array, 2)
+    tag_array = to_categorical(tag_array, 2)
     return fpath_list, tag_array
 
 
@@ -199,7 +198,7 @@ def fpath_tag_making_categorical(root, classes):
     tag_array = np.array(tag_list)
     # OPTIMIZE: classesはroot以下のディレクトリの数を数えて取得出来るので、
     #           引数としてもらわなくても良いのではないか
-    tag_array = np_utils.to_categorical(tag_array, classes)
+    tag_array = to_categorical(tag_array, classes)
     return fpath_list, tag_array
 
 

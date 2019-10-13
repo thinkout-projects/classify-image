@@ -1,31 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# VGG16のネットワーク系
-from keras.models import Sequential, Model
+# モデル構築に使用するレイヤー
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense, Activation
+from tensorflow.keras.layers import Conv2D, BatchNormalization
+from tensorflow.keras.layers import MaxPooling2D, GlobalAveragePooling2D
 
-from keras.layers import Input, Flatten, Dense, Dropout, Activation
-from keras.applications.inception_resnet_v2 import InceptionResNetV2
-from keras.layers.convolutional import Conv2D, MaxPooling2D
+# 構築済みネットワーク
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.vgg19 import VGG19
+from tensorflow.keras.applications.xception import Xception
+from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.keras.applications.densenet import DenseNet201, DenseNet169
+from tensorflow.keras.applications.densenet import DenseNet121
+from tensorflow.keras.applications.resnet50 import ResNet50
 
-# VGG 16
-from keras.applications.vgg16 import VGG16
-from keras.applications.vgg19 import VGG19
-from keras.applications.xception import Xception
-from keras.applications.inception_v3 import InceptionV3
-from keras.applications.densenet import DenseNet201, DenseNet169, DenseNet121
-from keras.applications.resnet50 import ResNet50
 
 
 class Models(object):
     '''
     modelを定義するクラス
     '''
-    # InceptionResNetV2
-    # Xception
-    # InceptionV3
-    # DenseNet201
-    # ResNet50
 
     def __init__(self, size, classes, pic_mode):
         self.ch = 3
@@ -34,6 +31,7 @@ class Models(object):
         self.h = self.size[1]
         self.classes = classes
         self.pic_mode = pic_mode
+
 
     def choose(self, model_name):
         if model_name == 'VGG16':
@@ -58,215 +56,233 @@ class Models(object):
             model = self.light_weight_model()
         return model
 
+
     def vgg16(self):
         '''
-        VGG16(初期値Imagenet、非固定版)
+        VGG16(初期値Imagenet)
         '''
 
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        vgg16_model = VGG16(include_top=False,
-                            weights='imagenet', input_tensor=input_tensor)
-
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=vgg16_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = VGG16(include_top=False, weights='imagenet',
+                           input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(128, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=vgg16_model.input,
-                      outputs=top_model(vgg16_model.output))
         return model
+
 
     def vgg19(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = VGG19(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        '''
+        VGG19(初期値Imagenet)
+        '''
 
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = VGG19(include_top=False, weights='imagenet',
+                           input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(128, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=design_model.input,
-                      outputs=top_model(design_model.output))
         return model
+
 
     def dense121(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = DenseNet121(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        '''
+        DenseNet121(初期値Imagenet)
+        '''
 
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = DenseNet121(include_top=False, weights='imagenet',
+                                 input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(256, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=design_model.input,
-                      outputs=top_model(design_model.output))
         return model
+
 
     def dense169(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = DenseNet169(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        '''
+        DenseNet169(初期値Imagenet)
+        '''
 
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = DenseNet169(include_top=False, weights='imagenet',
+                                 input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(512, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=design_model.input,
-                      outputs=top_model(design_model.output))
         return model
+
 
     def dense201(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = DenseNet201(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        '''
+        DenseNet201(初期値Imagenet)
+        '''
 
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = DenseNet201(include_top=False, weights='imagenet',
+                                 input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(512, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=design_model.input,
-                      outputs=top_model(design_model.output))
         return model
+
 
     def inception_resnet2(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = InceptionResNetV2(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        '''
+        InceptionResNetV2(初期値Imagenet)
+        '''
 
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = InceptionResNetV2(include_top=False, weights='imagenet',
+                                       input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(512, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=design_model.input,
-                      outputs=top_model(design_model.output))
         return model
+
 
     def inception3(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = InceptionV3(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        '''
+        InceptionV3(初期値Imagenet)
+        '''
 
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = InceptionV3(include_top=False, weights='imagenet',
+                                 input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(512, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=design_model.input,
-                      outputs=top_model(design_model.output))
         return model
+
 
     def resnet50(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = ResNet50(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        '''
+        ResNet50(初期値Imagenet)
+        '''
 
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = ResNet50(include_top=False, weights='imagenet',
+                              input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(512, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=design_model.input,
-                      outputs=top_model(design_model.output))
         return model
+
 
     def xception(self):
-        input_tensor = Input(shape=(self.h, self.w, self.ch))
-        design_model = Xception(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
+        '''
+        Xception(初期値Imagenet)
+        '''
 
-        # FC層を構築
-        top_model = Sequential()
-        top_model.add(Flatten(input_shape=design_model.output_shape[1:]))
-        top_model.add(Dense(256, activation='relu'))
-        top_model.add(Dropout(0.5))
-        if(self.pic_mode != 2):
-            top_model.add(Dense(self.classes, activation='softmax'))
+        base_model = Xception(include_top=False, weights='imagenet',
+                              input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(512, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            top_model.add(Dense(self.classes, activation='relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
 
-        # VGG16とFCを接続
-        model = Model(inputs=design_model.input,
-                      outputs=top_model(design_model.output))
         return model
+
 
     def light_weight_model(self):
         '''
-        laptopでも使用できる3層ネットワーク
-        inputなどが正しいか評価するときに使用
+        laptopでも使用できる3層畳み込みネットワーク
         '''
 
-        model = Sequential()
-        model.add(Conv2D(32, (3, 3), padding='valid',
-                         input_shape=(self.h, self.w, self.ch)))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(0.25))
-        model.add(Conv2D(64, (3, 3), padding='valid'))
-        model.add(Activation('relu'))
-        model.add(Conv2D(64, (3, 3), padding='valid'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(0.25))
-        model.add(Flatten())
-        model.add(Dense(512))
-        model.add(Activation('relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(self.classes))
-
-        if(self.pic_mode != 2):
-            model.add(Activation('softmax'))
+        inputs = Input(shape=(self.h, self.w, self.ch))
+        x = Conv2D(32, (3, 3), padding='same',
+                   kernel_initializer='he_normal')(inputs)
+        x = BatchNormalization()(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+        x = Activation('relu')(x)
+        x = Conv2D(64, (3, 3), padding='same',
+                   kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+        x = Activation('relu')(x)
+        x = Conv2D(128, (3, 3), padding='same',
+                   kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+        x = Activation('relu')(x)
+        x = GlobalAveragePooling2D()(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
         else:
-            model.add(Activation('relu'))
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=inputs, outputs=outputs)
+
         return model
