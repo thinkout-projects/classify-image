@@ -96,7 +96,7 @@ class Learning(Training):
         return history
 
 
-def plot_hist(history, history_folder, idx):
+def plot_hist(history, history_folder, metrics, idx):
     '''
     historyオブジェクト（model.fit_generatorから生まれる）の属性として
     .history["acc"]や.history["val_acc"]がある。
@@ -106,14 +106,14 @@ def plot_hist(history, history_folder, idx):
     folder_create(history_folder)
     history_file = "history" + "_" + str(idx) + "." + "jpg"
     fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10, 4))
-    L_title = "Accuracy_vs_Epoch"
-    axL.plot(history.history['accuracy'])
-    axL.plot(history.history['val_accuracy'])
+    L_title = metrics[0].upper() + metrics[1:] + '_vs_Epoch'
+    axL.plot(history.history[metrics])
+    axL.plot(history.history['val_'+metrics])
 
     # grid表示（格子を表示する）
     axL.grid(True)
     axL.set_title(L_title)
-    axL.set_ylabel('accuracy')
+    axL.set_ylabel(metrics)
     axL.set_xlabel('epoch')
 
     # 凡例をtrainとtestとする。(plotした順番に並べる)
