@@ -34,7 +34,6 @@ from libs.k_fold_split import stratified_k_fold
 # モデルコンパイル
 from tensorflow.keras.optimizers import SGD
 from libs.models import Models
-from libs.utils.model import model_compile
 
 # 訓練用データの作成およびデータ拡張後の読みこみ
 from libs.data_generator import Training, Validation
@@ -197,9 +196,10 @@ def main():
                 loss = "binary_crossentropy"
             elif PIC_MODE == 1:
                 loss = "categorical_crossentropy"
+            metrics = 'accuracy'
 
             # modelをcompileする。
-            model_compile(model, loss, optimizer)
+            model.compile(loss=loss, optimizer=optimizer, metrics=[metrics])
             learning = Learning(options['FolderName'], idx, PIC_MODE,
                                 train_num_mode_dic,
                                 image_size, classes,
@@ -215,7 +215,7 @@ def main():
             printWithDate(
                 f"Learning finished [{idx + 1}/{options.getint('Validation', 'k')}]")
 
-            plot_hist(history, history_folder, idx)
+            plot_hist(history, history_folder, metrics, idx)
             model_load(model, model_folder, idx)
             y_pred = model.predict(X_val)
             Miss_classify(idx, y_pred, y_val, W_val,
