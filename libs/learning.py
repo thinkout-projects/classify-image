@@ -67,13 +67,13 @@ class Learning(Training):
                                 save_best_only=True, mode='min')
 
         # 学習が停滞したとき、学習率を0.2倍に
-        rl_cb = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=5,
+        rl_cb = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=3,
                                   verbose=1, mode='auto',
-                                  epsilon=0.0001, cooldown=0, min_lr=0)
+                                  min_delta=0.0001, cooldown=0, min_lr=0)
 
         # 学習が進まなくなったら、強制的に学習終了
         es_cb = EarlyStopping(monitor='loss', min_delta=0,
-                              patience=20, verbose=1, mode='auto')
+                              patience=10, verbose=1, mode='auto')
 
         # fpath_list,tag_listを作成する
         fpath_list, tag_array = fpath_tag_making(self.train_root, self.classes,
