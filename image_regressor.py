@@ -58,7 +58,6 @@ def main():
 
     # GPUに過負荷がかかると実行できなくなる。∴余力を持たしておく必要がある。
     # 必要最小限のメモリを確保する
-    # GPUが無いとエラー
     # GPUはひとつだけ使用する
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if len(gpus) > 0:
