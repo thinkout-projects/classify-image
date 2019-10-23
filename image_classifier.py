@@ -24,7 +24,7 @@ from tensorflow.keras.backend import clear_session
 # folder関連
 from libs.utils.folder import folder_create, folder_delete
 
-# 分割(層化k分割の交差検証)
+# 分割(グループ層化k分割の交差検証)
 from libs.k_fold_split import Stratified_group_k_fold
 
 # 評価用データの作成および読みこみ
