@@ -18,8 +18,8 @@ from tensorflow.keras.backend import clear_session
 # folder関連
 from libs.utils.folder import folder_create, folder_delete
 
-# 分割(層化k分割の交差検証)
-from libs.k_fold_split import simple_k_fold
+# 分割(グループ層化k分割の交差検証)
+from libs.k_fold_split import Stratified_group_k_fold
 
 # 評価用データの作成および読みこみ
 # train/00_normal/画像ファイル)
@@ -109,11 +109,12 @@ def main():
     printWithDate(f"hasID = {hasID}")
 
     printWithDate("spliting dataset")
-    df_train_list, df_test_list = \
-        simple_k_fold(options.getint('Validation', 'k'),
-                      options['CSV'],
-                      options['FolderName']['split_info'],
-                      df, hasID)
+    sgkf = Stratified_group_k_fold(csv_config=options['CSV'],
+                                   n_splits=options.getint('Validation', 'k'),
+                                   shuffle=True, random_state=42,
+                                   split_info_folder=
+                                   options['FolderName']['split_info'])
+    df_train_list, df_test_list = sgkf.k_fold_regressor(df)
 
     # 分割ごとに
     for idx in range(options.getint('Validation', 'k')):
