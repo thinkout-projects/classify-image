@@ -7,7 +7,6 @@ import pandas as pd
 import numpy as np
 import dataclasses
 from collections import defaultdict
-from sklearn.model_selection import StratifiedKFold, KFold
 from .utils.folder import folder_create
 from tqdm import tqdm
 
