@@ -8,10 +8,11 @@ from .utils.folder import folder_create
 import matplotlib.pyplot as plt
 
 # main関数
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.callbacks import EarlyStopping
 from .data_generator import Training
 from .utils.utils import fpath_tag_making
-# regression用に
+
 
 # モニターのないサーバーでも動作するように
 plt.switch_backend('agg')
@@ -90,7 +91,7 @@ class Learning(Training):
                                            validation_data=(
             self.X_val, self.y_val),
             callbacks=[mc_cb, rl_cb, es_cb],
-            workers=3,
+            workers=1,
             verbose=1)
         return history
 
@@ -106,8 +107,8 @@ def plot_hist(history, history_folder, idx):
     history_file = "history" + "_" + str(idx) + "." + "jpg"
     fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10, 4))
     L_title = "Accuracy_vs_Epoch"
-    axL.plot(history.history['acc'])
-    axL.plot(history.history['val_acc'])
+    axL.plot(history.history['accuracy'])
+    axL.plot(history.history['val_accuracy'])
 
     # grid表示（格子を表示する）
     axL.grid(True)

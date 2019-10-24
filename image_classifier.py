@@ -19,8 +19,7 @@ from time import sleep
 
 # GPU使用量の調整
 import tensorflow as tf
-from keras.backend.tensorflow_backend import set_session
-from keras.backend.tensorflow_backend import clear_session
+from tensorflow.keras.backend import clear_session
 
 # folder関連
 from libs.utils.folder import folder_create, folder_delete
@@ -33,7 +32,7 @@ from libs.k_fold_split import stratified_k_fold
 # train/01_Gla/(画像ファイル)
 
 # モデルコンパイル
-from keras.optimizers import SGD
+from tensorflow.keras.optimizers import SGD
 from libs.models import Models
 from libs.utils.model import model_compile
 
@@ -63,11 +62,21 @@ import pandas as pd
 def main():
     printWithDate("main() function is started")
 
+    # TensorFlowのバージョンチェック，1.x系はエラー
+    tf_version = tf.__version__
+    if int(tf_version.split('.')[0]) < 2:
+        error.tf_version_error(tf_version)
+
     # GPUに過負荷がかかると実行できなくなる。∴余力を持たしておく必要がある。
-    # 50％のみを使用することとする
-    config = tf.ConfigProto()
-    # config.gpu_options.per_process_gpu_memory_fraction = 0.8
-    config.gpu_options.allow_growth = True
+    # 必要最小限のメモリを確保する
+    # GPUはひとつだけ使用する
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if len(gpus) > 0:
+         tf.config.experimental.set_memory_growth(gpus[0], True)
+         tf.device(gpus[0][0])
+    else:
+        cpus = tf.config.experimental.list_physical_devices('CPU')
+        tf.device(cpus[0][0])
 
     # 作業ディレクトリを自身のファイルのディレクトリに変更
     os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -167,7 +176,7 @@ def main():
             if is_use == 'False':  # valueはstr型
                 continue
 
-            set_session(tf.Session(config=config))
+            clear_session()
 
             folder_create(model_name)
             history_folder = os.path.join(model_name, "history")
@@ -219,7 +228,6 @@ def main():
             printWithDate(
                 f"Analysis finished [{idx + 1}/{options.getint('Validation', 'k')}]")
             model_delete(model, model_folder, idx)
-            clear_session()
 
         # 訓練用フォルダおよびテスト用フォルダを削除する。
         folder_delete(options['FolderName']['train'])

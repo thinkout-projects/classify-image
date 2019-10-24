@@ -11,8 +11,7 @@ import threading
 import shutil
 from .utils.utils import fpath_tag_making, fpath_making, read_img, printWithDate
 from .utils.folder import folder_create
-from keras.preprocessing.image import ImageDataGenerator
-# from keras.utils import np_utils
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tqdm import tqdm
 
 # k_fold_split(k,img_root,dataset_folder)
@@ -23,31 +22,6 @@ from tqdm import tqdm
 # src →numpy array
 # num_listは変換
 # mode
-
-
-class threadsafe_iter:
-    """Takes an iterator/generator and makes it thread-safe by
-    serializing call to the `next` method of given iterator/generator.
-    """
-
-    def __init__(self, it):
-        self.it = it
-        self.lock = threading.Lock()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        with self.lock:
-            return next(self.it)
-
-
-def threadsafe_generator(f):
-    """A decorator that takes a generator function and makes it thread-safe.
-    """
-    def g(*a, **kw):
-        return threadsafe_iter(f(*a, **kw))
-    return g
 
 
 class Training(object):
@@ -167,7 +141,7 @@ class Training(object):
             X_train.append(X)
             # 回帰の場合はファイル名冒頭からターゲットを読み込む
             if(self.pic_mode == 2):
-                y_train.append((os.path.basename(fpath).split("#")[0]))
+                y_train.append((float(os.path.basename(fpath).split("#")[0])))
         X_train = np.array(X_train)
         X_train = Training.data_gen(self, X_train)
         if(self.pic_mode != 2):
@@ -176,7 +150,6 @@ class Training(object):
             y_train = np.array(y_train)
         return X_train, y_train
 
-    @threadsafe_generator
     def datagen(self, fpath_list, tag_array):  # data generator
         while True:
             for i in range(0, len(fpath_list) - self.BATCH_SIZE,
