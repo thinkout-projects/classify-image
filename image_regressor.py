@@ -57,6 +57,11 @@ PIC_MODE = 2
 def main():
     printWithDate("main() function is started")
 
+    # TensorFlowのバージョンチェック，1.x系はエラー
+    tf_version = tf.__version__
+    if int(tf_version.split('.')[0]) < 2:
+        error.tf_version_error(tf_version)
+
     # GPUに過負荷がかかると実行できなくなる。∴余力を持たしておく必要がある。
     # 必要最小限のメモリを確保する
     # GPUはひとつだけ使用する

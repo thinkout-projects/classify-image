@@ -65,3 +65,18 @@ def positive_label_not_found(positive_label):
 
     sys.exit(300)
     return
+
+
+def tf_version_error(tf_version):
+    '''
+    TensorFlowのバージョンが2.x系以上でなかったときに発生
+    終了コード : 400
+    '''
+    print(PREFIX)
+    print("Error Code 400: ", end="")
+    print(f"The tensorflow version [{tf_version}] is inappropriate.")
+    print("Upgrade the tensorflow version to 2.x.")
+    print(SUFFIX)
+
+    sys.exit(400)
+    return
