@@ -108,7 +108,7 @@ def plot_hist(history, history_folder, metrics, idx):
     history_file = f"history_{idx}.jpg"
     fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10, 4))
 
-    # [右側] metricsについてのグラフ
+    # [左側] metricsについてのグラフ
     L_title = metrics[0].upper() + metrics[1:] + '_vs_Epoch'
     axL.plot(history.history[metrics])
     axL.plot(history.history['val_'+metrics])
@@ -118,7 +118,7 @@ def plot_hist(history, history_folder, metrics, idx):
     axL.set_xlabel('epoch')
     axL.legend(['train', 'test'], loc='upper left')
 
-    # [左側] lossについてのグラフ
+    # [右側] lossについてのグラフ
     R_title = "Loss_vs_Epoch"
     axR.plot(history.history['loss'])
     axR.plot(history.history['val_loss'])
