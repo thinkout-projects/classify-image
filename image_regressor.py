@@ -171,11 +171,10 @@ def main():
             # optimizerはAdam
             optimizer = Adam(lr=0.0001)
 
-            # lossは画像解析のモードによる。
+            # loss, metricsは画像解析のモードによる。
             loss = "mean_squared_error"
             metrics = 'mean_absolute_error'
 
-            # modelをcompileする。
             model.compile(loss=loss, optimizer=optimizer, metrics=[metrics])
             learning = Learning(options['FolderName'], idx, PIC_MODE,
                                 train_num_mode_dic,
