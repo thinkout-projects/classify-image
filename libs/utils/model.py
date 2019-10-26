@@ -7,10 +7,6 @@ import os
 import glob
 
 
-def model_compile(model, loss, optimizer):
-    model.compile(loss=loss, optimizer=optimizer, metrics=["accuracy"])
-    return
-
 
 def model_load(model, model_folder, idx):
     model_files = glob.glob(os.path.join(
