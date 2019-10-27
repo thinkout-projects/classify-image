@@ -195,14 +195,13 @@ def main():
             optimizer = SGD(lr=0.0001, decay=1e-6, momentum=0.9,
                             nesterov=True)  # Adam(lr = 0.0005)
 
-            # lossは画像解析のモードによる。
+            # loss, metricsは画像解析のモードによる。
             if PIC_MODE == 0:
                 loss = "binary_crossentropy"
             elif PIC_MODE == 1:
                 loss = "categorical_crossentropy"
             metrics = 'accuracy'
 
-            # modelをcompileする。
             model.compile(loss=loss, optimizer=optimizer, metrics=[metrics])
             learning = Learning(options['FolderName'], idx, PIC_MODE,
                                 train_num_mode_dic,

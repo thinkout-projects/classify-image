@@ -98,28 +98,27 @@ class Learning(Training):
 
 def plot_hist(history, history_folder, metrics, idx):
     '''
-    historyオブジェクト（model.fit_generatorから生まれる）の属性として
-    .history["acc"]や.history["val_acc"]がある。
-    元々のmovie名からタイトルを決定する
+    KerasのHistoryオブジェクトを受け取り、
+    epochの進行に対するmetricsとlossの変化を記録したグラフを保存する。
+
+    グラフは`history_folder`ディレクトリにhistory_`idx`.jpgの名前で保存される。
     '''
 
     folder_create(history_folder)
-    history_file = "history" + "_" + str(idx) + "." + "jpg"
+    history_file = f"history_{idx}.jpg"
     fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10, 4))
+
+    # [左側] metricsについてのグラフ
     L_title = metrics[0].upper() + metrics[1:] + '_vs_Epoch'
     axL.plot(history.history[metrics])
     axL.plot(history.history['val_'+metrics])
-
-    # grid表示（格子を表示する）
     axL.grid(True)
     axL.set_title(L_title)
     axL.set_ylabel(metrics)
     axL.set_xlabel('epoch')
-
-    # 凡例をtrainとtestとする。(plotした順番に並べる)
     axL.legend(['train', 'test'], loc='upper left')
 
-    # summarize history for loss
+    # [右側] lossについてのグラフ
     R_title = "Loss_vs_Epoch"
     axR.plot(history.history['loss'])
     axR.plot(history.history['val_loss'])
