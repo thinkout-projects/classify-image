@@ -26,9 +26,7 @@ class Models(object):
 
     def __init__(self, size, classes, pic_mode):
         self.ch = 3
-        self.size = size
-        self.w = self.size[0]
-        self.h = self.size[1]
+        self.h, self.w = size
         self.classes = classes
         self.pic_mode = pic_mode
 
