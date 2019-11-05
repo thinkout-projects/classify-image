@@ -17,6 +17,7 @@ class Stratified_group_k_fold:
     """
     データをグループ層化K分割するときのパラメータを保持する
     """
+
     csv_config: dict # 学習に使用するデータの情報が書かれたcsvの情報
     split_info_folder : str # 分割されたファイルの内訳を保存するフォルダ名
     n_splits: int = 5 # 分割数
@@ -46,11 +47,10 @@ class Stratified_group_k_fold:
 
         Yields
         -------
-        train : array-like, shape(分割数, ファイル数)
+        train_index : array-like, shape(分割数, ファイル数)
             学習用として分けられたi分割目のXのインデックス
-        test : array-like, shape(分割数, ファイル数)
+        test_index : array-like, shape(分割数, ファイル数)
             テスト用として分けられたi分割目のXのインデックス
-
         """
 
         # 初期化
@@ -152,31 +152,14 @@ class Stratified_group_k_fold:
         df_train_list = []
         df_test_list = []
         for i, (train_index, test_index) in enumerate(self.split(X, y, groups)):
-            train_dict = defaultdict(list)
-            test_dict = defaultdict(list)
-            for idx in train_index:
-                train_dict[y[idx]].append(X[idx])
-            for idx in test_index:
-                test_dict[y[idx]].append(X[idx])
-
-            df_train = pd.DataFrame()
-            for key in train_dict.keys():
-                ds_train = pd.Series(train_dict[key])
-                df_train = pd.concat([df_train,
-                                      pd.DataFrame(ds_train, columns=[key])],
-                                     axis=1)
-            df_test = pd.DataFrame()
-            for key in test_dict.keys():
-                ds_test = pd.Series(test_dict[key])
-                df_test = pd.concat([df_test,
-                                     pd.DataFrame(ds_test, columns=[key])],
-                                    axis=1)
+            df_train = df.iloc[train_index]
+            df_test = df.iloc[test_index]
 
             ## 分割されたデータの情報を出力
-            df_train.to_csv(f"{self.split_info_folder}/train_{i}.csv",
-                            index=False, encoding="utf-8")
-            df_test.to_csv(f"{self.split_info_folder}/test_{i}.csv",
-                           index=False, encoding="utf-8")
+            df_train.to_csv(f'{self.split_info_folder}/train_{i}.csv',
+                            index=False, encoding='utf-8')
+            df_test.to_csv(f'{self.split_info_folder}/test_{i}.csv',
+                           index=False, encoding='utf-8')
             
             df_train_list.append(df_train)
             df_test_list.append(df_test)
@@ -206,6 +189,7 @@ class Stratified_group_k_fold:
         folder_create(self.split_info_folder)
         X = df[self.filename_column].values
         y = df[self.label_column].values
+
         ## 数値の分布が均等になるように分割するために疑似ラベルを作成
         y_pseudo = []
         y_min = min(y)
@@ -223,23 +207,14 @@ class Stratified_group_k_fold:
         df_train_list = []
         df_test_list = []
         for i, (train_index, test_index) in enumerate(self.split(X, y_pseudo, groups)):
-            train = {'filename': [], 'terget': []}
-            test = {'filename': [], 'terget': []}
-            for idx in train_index:
-                train['filename'].append(X[idx])
-                train['terget'].append(y[idx])
-            for idx in test_index:
-                test['filename'].append(X[idx])
-                test['terget'].append(y[idx])
-
-            df_train = pd.DataFrame(train)
-            df_test = pd.DataFrame(test)
+            df_train = df.iloc[train_index]
+            df_test = df.iloc[test_index]
 
             ## 分割されたデータの情報を出力
-            df_train.to_csv(f"{self.split_info_folder}/train_{i}.csv",
-                            index=False, encoding="utf-8")
-            df_test.to_csv(f"{self.split_info_folder}/test_{i}.csv",
-                           index=False, encoding="utf-8")
+            df_train.to_csv(f'{self.split_info_folder}/train_{i}.csv',
+                            index=False, encoding='utf-8')
+            df_test.to_csv(f'{self.split_info_folder}/test_{i}.csv',
+                           index=False, encoding='utf-8')
             
             df_train_list.append(df_train)
             df_test_list.append(df_test)
