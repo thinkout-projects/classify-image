@@ -45,8 +45,7 @@ class Miss_classify(object):
             # pred_listはすべての問題のAIによる回答
             pred_list.append(pred_ans)
 
-            true_ans = true.argmax()
-            true_list.append(true_ans)
+            true_list.append(true)
 
             for idx, class_name in enumerate(self.class_list):
                 class_score_dic[class_name].append(pred[idx])

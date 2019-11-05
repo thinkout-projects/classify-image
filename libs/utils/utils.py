@@ -37,17 +37,15 @@ def check_options(Options):
                 'NetworkUsing',
                 'ImageSize',
                 'HyperParameter',
-                'DataGenerate',
-                'ImageDataGenerator',
+                'ExtraImageAugmentation',
+                'BaseImageAugmentation',
                 'Validation',
                 'Analysis',
                 'etc']
 
     OPTIONS = [  # FolderName
                ['dataset',
-                'split_info',
-                'train',
-                'test'],
+                'split_info'],
                # CSV
                ['csv_filename',
                 'image_filename_column',
@@ -70,15 +68,20 @@ def check_options(Options):
                # HyperParameter
                ['batch_size',
                 'epochs'],
-               # DataGenerate
-               ['num_of_augs',
-                'use_flip'],
-               # ImageDataGenerator
+               # ExtraImageAugmentation
+               ['contrast',
+                'gamma',
+                'blur',
+                'equalize_histogram',
+                'noise'],
+               # BaseImageAugmentation
                ['rotation_range',
                 'width_shift_range',
                 'height_shift_range',
                 'shear_range',
-                'zoom_range'],
+                'zoom_range',
+                'horizontal_flip',
+                'vertical_flip'],
                # Validation
                ['k'],
                # Analysis
@@ -245,6 +248,6 @@ def read_img(fpath, h, w):
     fpathのファイルをh x wのサイズにリサイズし、numpy配列(float32)にしたものを返す
     '''
     X = np.array(
-        cv2.resize(cv2.imread(fpath), (h, w)) / 255.0,
+        cv2.resize(cv2.imread(fpath), (w, h)) / 255.0,
         dtype=np.float32)
     return X
