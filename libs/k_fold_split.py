@@ -17,6 +17,7 @@ class Stratified_group_k_fold:
     """
     データをグループ層化K分割するときのパラメータを保持する
     """
+
     csv_config: dict # 学習に使用するデータの情報が書かれたcsvの情報
     split_info_folder : str # 分割されたファイルの内訳を保存するフォルダ名
     n_splits: int = 5 # 分割数
@@ -46,11 +47,10 @@ class Stratified_group_k_fold:
 
         Yields
         -------
-        train : array-like, shape(分割数, ファイル数)
+        train_index : array-like, shape(分割数, ファイル数)
             学習用として分けられたi分割目のXのインデックス
-        test : array-like, shape(分割数, ファイル数)
+        test_index : array-like, shape(分割数, ファイル数)
             テスト用として分けられたi分割目のXのインデックス
-
         """
 
 
