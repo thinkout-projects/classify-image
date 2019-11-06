@@ -184,7 +184,7 @@ class Stratified_group_k_fold:
         return df_train_list, df_test_list
 
 
-    def k_fold_regressor(self, df):
+    def k_fold_regressor(self, df, bins_num=None):
         """
         回帰問題においてグループ層化K分割を行い，分割の内訳をcsvで保存する
         数値ラベルを数値を基準にグループ化し，分布が均等になるようにK分割する
@@ -193,6 +193,8 @@ class Stratified_group_k_fold:
         ----------
         df : DataFrame(pandas)
             学習に使用するデータの情報
+        bins_num : int or None
+            疑似ラベルの分割数，Noneの場合，分割数はデータ数の平方根となる
 
         Returns
         -------
@@ -207,15 +209,11 @@ class Stratified_group_k_fold:
         X = df[self.filename_column].values
         y = df[self.label_column].values
         ## 数値の分布が均等になるように分割するために疑似ラベルを作成
-        y_pseudo = []
-        y_min = min(y)
-        y_max = max(y)
-        y_threshold = [i*(y_max-y_min)/10 for i in range(1, 11)]
-        for _y in y:
-            for i, threshold in enumerate(y_threshold):
-                if _y < threshold:
-                    y_pseudo.append(i)
-                    continue
+        if bins_num is None:
+            bins_num = int(len(X) ** 0.5) + 1
+        bins = np.linspace(min(y), max(y), bins_num)
+        y_pseudo = np.digitize(y, bins) - 1
+        y_pseudo[np.argmax(y)] -= 1
         if self.group_column == 'None':
             groups = None
         else:
