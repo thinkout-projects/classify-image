@@ -65,7 +65,7 @@ class Stratified_group_k_fold:
         labels_num = len(labels_list)
         y_count = np.zeros(labels_num)
         for _y in y:
-            y_count += labels_list.index(_y)
+            y_count[labels_list.index(_y)] += 1
 
         ## グループとファイル名の対応辞書，ファイル名とラベルの対応辞書，
         ## グループとラベルの数および種類の対応辞書を作成
