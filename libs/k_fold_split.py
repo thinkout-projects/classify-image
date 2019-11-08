@@ -94,7 +94,7 @@ class Stratified_group_k_fold:
         # ラベル数の標準偏差が最小になるようにデータを割り当てる
         for unique_group in tqdm(unique_group_list, desc='k-fold_split'):
             best_fold = None
-            min_eval = None
+            min_value = None
             for i in range(self.n_splits):
                 group_y_count_fold[i] += group_y_count_dict[unique_group]
                 std_per_label = []
@@ -104,10 +104,10 @@ class Stratified_group_k_fold:
                                         for i in range(self.n_splits)])
                     std_per_label.append(label_std)
                 group_y_count_fold[i] -= group_y_count_dict[unique_group]
-                eval = np.mean(std_per_label)
+                value = np.mean(std_per_label)
         
-                if min_eval is None or eval < min_eval:
-                    min_eval = eval
+                if min_value is None or value < min_value:
+                    min_value = value
                     best_fold = i
 
             group_y_count_fold[best_fold] += group_y_count_dict[unique_group]
