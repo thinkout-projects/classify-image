@@ -55,8 +55,10 @@ class Stratified_group_k_fold:
 
         # 初期化
         ## グループがない場合はファイル名をグループ名とする
+        ## ユニークなグループ名を取得
         if groups is None:
             groups = X
+        unique_group_list = list(set(groups))
 
         ## ラベルの数と種類を取得
         labels_list = list(set(y))
@@ -85,7 +87,6 @@ class Stratified_group_k_fold:
         # グループを1単位としてシャッフル
         if self.shuffle is True:
             np.random.seed(seed=self.random_state)
-            unique_group_list = list(set(groups))
             np.random.shuffle(unique_group_list)
 
         # グループ層化K分割
