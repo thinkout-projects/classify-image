@@ -200,7 +200,7 @@ def summary_analysis_binary(miss_summary_file, summary_file, roc_fig,
     plt.title('ROC curve')
     plt.legend(loc="lower right")
     plt.savefig(roc_fig)
-    plt.clf()
+    plt.close()
     return
 
 
@@ -260,4 +260,4 @@ def summary_analysis_regression(miss_summary_file, summary_file, fig_file):
     plt.ylabel('Predict Value')
     plt.title('Prediction')
     plt.savefig(fig_file)
-    plt.clf()
+    plt.close()
