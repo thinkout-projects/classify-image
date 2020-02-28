@@ -129,5 +129,5 @@ def plot_hist(history, history_folder, metrics, idx):
     axR.legend(['train', 'test'], loc='upper left')
 
     fig.savefig(os.path.join(history_folder, history_file))
-    plt.clf()
+    plt.close()
     return
