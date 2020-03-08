@@ -77,8 +77,8 @@ def main():
     check_options(options)
 
     # 変数の整形
-    image_size = [options.getint('ImageSize', 'width'),
-                  options.getint('ImageSize', 'height')]
+    image_size = (options.getint('ImageSize', 'height'),
+                  options.getint('ImageSize', 'width'))
 
     # 設定ファイルで指定したcsvファイルを読み込み
     df = pd.read_csv(options['CSV']['csv_filename'], dtype=str)
