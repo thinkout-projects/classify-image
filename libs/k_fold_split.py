@@ -53,48 +53,6 @@ class Stratified_group_k_fold:
             テスト用として分けられたi分割目のXのインデックス
         """
 
-
-@dataclasses.dataclass
-class Stratified_group_k_fold:
-    """
-    データをグループ層化K分割するときのパラメータを保持する
-    """
-
-    csv_config: dict # 学習に使用するデータの情報が書かれたcsvの情報
-    split_info_folder : str # 分割されたファイルの内訳を保存するフォルダ名
-    n_splits: int = 5 # 分割数
-    shuffle: bool = False # シャッフルするかどうか
-    random_state: int = None # ランダムシード
-
-
-    def __post_init__(self):
-        self.filename_column = self.csv_config["image_filename_column"] # ファイル列
-        self.label_column = self.csv_config["label_column"] # ラベル列
-        self.group_column = self.csv_config["ID_column"] # グループ列
-
-
-    def split(self, X, y, groups=None):
-        """
-        グループ層化K分割する
-
-        Parameters
-        ----------
-        X : array-like, shape(ファイル数,)
-            分割するファイル名
-        y : array-like, shape(ファイル数,)
-            分割するファイル名のラベル
-        groups : None or array-like, shape(ファイル数,)
-            分割するファイルのグループ名
-            Noneの場合はただの層化K分割となる
-
-        Yields
-        -------
-        train_index : array-like, shape(分割数, ファイル数)
-            学習用として分けられたi分割目のXのインデックス
-        test_index : array-like, shape(分割数, ファイル数)
-            テスト用として分けられたi分割目のXのインデックス
-        """
-
         # 初期化
         ## グループがない場合はファイル名をグループ名とする
         ## ユニークなグループ名を取得
