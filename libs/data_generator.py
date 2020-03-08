@@ -120,16 +120,17 @@ class Trans:
 
 
     def augment(self):
-        def fit(self, input_image):
+        def fit(input_image):
             input_image = cv2.cvtColor(input_image, cv2.COLOR_RGB2BGR)
+            input_image = np.array(input_image, dtype=np.uint8)
 
             rand = np.random.randint(len(self.convert_list_1))
-            input_image = self.func_dict[self.convert_list_1[rand]]
+            input_image = self.func_dict[self.convert_list_1[rand]](input_image)
             rand = np.random.randint(len(self.convert_list_2))
-            input_image = self.func_dict[self.convert_list_2[rand]]
+            input_image = self.func_dict[self.convert_list_2[rand]](input_image)
 
-            return input_image
-
+            return np.array(input_image, dtype=np.float32)
+        return fit
 
     # ① 何もしない
     def nothing_func(self, src):
