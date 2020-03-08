@@ -81,7 +81,12 @@ def main():
                   options.getint('ImageSize', 'height')]
 
     # 設定ファイルで指定したcsvファイルを読み込み
-    df = pd.read_csv(options['CSV']['csv_filename'])
+    df = pd.read_csv(options['CSV']['csv_filename'], dtype=str)
+    try:
+        df[options['CSV']['label_column']] = \
+            df[options['CSV']['label_column']].astype(float)
+    except ValueError as e:
+        error.float_convert_error(options['CSV']['label_column'], e)
 
     # 分類ラベルをリスト化し、リストの長さを調べて分類数とする
     # TODO: PIC_MODEを廃止して
