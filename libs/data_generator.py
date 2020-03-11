@@ -32,9 +32,9 @@ class Trans:
         ⑧ガウシアンノイズ       addGaussianNoise
         ⑨ソルトペッパーノイズ   addSaltPepperNoise
 
-    data_augment関数内における処理の呼び出し
-        data = Trans()
-        処理後画像 = data.convert(処理前画像, 処理に対応する数字)
+    使い方: `ImageDataGenerator`の`preprocessing_function`引数に`augment()`メソッドを渡す
+        augmentor = Trans('有効化する前処理をTrueにする')
+        datagen = ImageDataGenerator(preprocessing_function=augmentor.augment())
     '''
 
     contrast: bool = False # コントラスト変換
