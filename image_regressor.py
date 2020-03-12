@@ -21,16 +21,9 @@ from libs.utils.folder import folder_create, folder_delete
 # 分割(グループ層化k分割の交差検証)
 from libs.k_fold_split import Stratified_group_k_fold
 
-# 評価用データの作成および読みこみ
-# train/00_normal/画像ファイル)
-# train/01_Gla/(画像ファイル)
-
 # モデルコンパイル
 from tensorflow.keras.optimizers import Adam
 from libs.models import Models
-
-# 訓練用データの作成およびデータ拡張後の読みこみ
-from libs.data_generator import Training, Validation
 
 # modelの定義およびコンパイル、学習、保存、学習経過のプロット
 from libs.learning import Learning, plot_hist
@@ -84,11 +77,16 @@ def main():
     check_options(options)
 
     # 変数の整形
-    image_size = [options.getint('ImageSize', 'width'),
-                  options.getint('ImageSize', 'height')]
+    image_size = (options.getint('ImageSize', 'height'),
+                  options.getint('ImageSize', 'width'))
 
     # 設定ファイルで指定したcsvファイルを読み込み
-    df = pd.read_csv(options['CSV']['csv_filename'])
+    df = pd.read_csv(options['CSV']['csv_filename'], dtype=str)
+    try:
+        df[options['CSV']['label_column']] = \
+            df[options['CSV']['label_column']].astype(float)
+    except ValueError as e:
+        error.float_convert_error(options['CSV']['label_column'], e)
 
     # 分類ラベルをリスト化し、リストの長さを調べて分類数とする
     # TODO: PIC_MODEを廃止して
@@ -97,14 +95,6 @@ def main():
     label_list = ["regression"]
     classes = len(label_list)
     printWithDate(f'regression mode')
-
-    # ここで、データ拡張の方法を指定。
-    # TODO: 回帰の目標値によって増強方法を変更出来るようにする
-    #       例) 視力0.0〜0.8は[6,1]、視力0.8〜は[3,1]
-    train_num_mode_dic = {}
-    for label in label_list:
-        train_num_mode_dic[label] = [options.getint('DataGenerate', 'num_of_augs'),
-                                     options.getboolean('DataGenerate', 'use_flip')]
 
     # 層化k分割
     if options['CSV']['ID_column'] == "None":
@@ -125,28 +115,6 @@ def main():
     for idx in range(options.getint('Validation', 'k')):
         printWithDate("processing sprited dataset",
                       f"{idx + 1}/{options['Validation']['k']}")
-
-        # 評価用データについて
-        printWithDate("making data for validation",
-                      f"[{idx + 1}/{options.getint('Validation', 'k')}]")
-        validation = Validation(image_size,
-                                options['FolderName'],
-                                classes, options['Analysis']['positive_label'],
-                                PIC_MODE, idx, df_test_list[idx])
-        validation.pic_df_test_reg()
-        X_val, y_val, W_val = validation.pic_gen_data_reg()
-
-        # 訓練用データについて
-        printWithDate("making data for training",
-                      f"[{idx + 1}/{options.getint('Validation', 'k')}]")
-        training = Training(options['FolderName'], idx, PIC_MODE,
-                            train_num_mode_dic,
-                            image_size, classes,
-                            options['Analysis']['positive_label'],
-                            options['ImageDataGenerator'],
-                            options.getint('HyperParameter', 'batch_size'),
-                            df_train_list[idx])
-        training.pic_df_training_reg()
 
         # model定義
         # modelの関係をLearningクラスのコンストラクタで使うから先にここで定義
@@ -177,34 +145,32 @@ def main():
             metrics = 'mean_absolute_error'
 
             model.compile(loss=loss, optimizer=optimizer, metrics=[metrics])
-            learning = Learning(options['FolderName'], idx, PIC_MODE,
-                                train_num_mode_dic,
-                                image_size, classes,
-                                options['Analysis']['positive_label'],
-                                options['ImageDataGenerator'],
-                                options.getint('HyperParameter', 'batch_size'),
-                                model_folder, model, X_val, y_val,
-                                options.getint('HyperParameter', 'epochs'),
-                                df_train_list[idx])
+            learning = Learning(
+                directory=options['FolderName']['dataset'],
+                csv_config=options['CSV'],
+                df_train=df_train_list[idx], df_validation=df_test_list[idx],
+                label_list=label_list, idx=idx,
+                base_augmentation=dict(options['BaseImageAugmentation']),
+                extra_augmentation=dict(options['ExtraImageAugmentation']),
+                image_size=image_size, classes=classes,
+                batch_size=options.getint('HyperParameter', 'batch_size'),
+                model_folder=model_folder,
+                epochs=options.getint('HyperParameter', 'epochs'))
 
             # 訓練実行
-            history = learning.learning_model()
+            history = learning.train(model)
             printWithDate(
                 f"Learning finished [{idx + 1}/{options.getint('Validation', 'k')}]")
 
             plot_hist(history, history_folder, metrics, idx)
             model_load(model, model_folder, idx)
-            y_pred = model.predict(X_val)
+            W_val, y_val, y_pred = learning.predict(model)
 
             Miss_regression(idx, y_pred, y_val, W_val,
                             miss_folder).miss_csv_making()
             printWithDate(
                 f"Analysis finished [{idx + 1}/{options.getint('Validation', 'k')}]")
             model_delete(model, model_folder, idx)
-
-        # 訓練用フォルダおよびテスト用フォルダを削除する。
-        folder_delete(options['FolderName']['train'])
-        folder_delete(options['FolderName']['test'])
 
         # colabとdriveの同期待ちをする
         for i in trange(options.getint('etc', 'wait_sec'),

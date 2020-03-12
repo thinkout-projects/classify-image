@@ -80,3 +80,18 @@ def tf_version_error(tf_version):
 
     sys.exit(400)
     return
+
+
+def float_convert_error(label_column, e):
+    '''
+    float型に変換できなかったときに発生
+    終了コード : 500
+    '''
+    print(PREFIX)
+    print("Error Code 500: ", end="")
+    print(f"{e}")
+    print("Are there characters in the {label_column} column of the csv file?")
+    print(SUFFIX)
+
+    sys.exit(500)
+    return
