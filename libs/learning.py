@@ -126,7 +126,7 @@ class Learning:
             classes=self.label_list,
             batch_size=self.batch_size)
         step_size_validation = \
-            validation_generator.n // validation_generator.batch_size + 1
+            (validation_generator.n - 1) // validation_generator.batch_size + 1  # 切り上げ
 
         # 実際に学習⇒historyを作成
         history = model.fit_generator(
