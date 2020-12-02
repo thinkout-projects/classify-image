@@ -52,6 +52,10 @@ class Models(object):
             model = self.xception()
         elif model_name == 'LightWeight':
             model = self.light_weight_model()
+        else:
+            print("The selected model does not exist.")
+            exit(1)
+            
         return model
 
 
