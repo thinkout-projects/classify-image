@@ -129,7 +129,7 @@ class Learning:
             (validation_generator.n - 1) // validation_generator.batch_size + 1  # 切り上げ
 
         # 実際に学習⇒historyを作成
-        history = model.fit_generator(
+        history = model.fit(
             train_generator, steps_per_epoch=step_size_train,
             epochs=self.epochs, verbose=1, callbacks=[mc_cb, rl_cb, es_cb],
             validation_data=validation_generator,
