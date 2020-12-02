@@ -16,6 +16,7 @@ from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.applications.densenet import DenseNet201, DenseNet169
 from tensorflow.keras.applications.densenet import DenseNet121
 from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications.efficientnet import EfficientNetB0
 
 
 
@@ -50,6 +51,8 @@ class Models(object):
             model = self.resnet50()
         elif model_name == 'Xception':
             model = self.xception()
+        elif model_name == "EfficientNetB0":
+            model = self.efficientnet_b0()
         elif model_name == 'LightWeight':
             model = self.light_weight_model()
         else:
@@ -254,6 +257,28 @@ class Models(object):
                             activation='softmax')(x)
         model = Model(inputs=base_model.input, outputs=outputs)
 
+        return model
+
+
+    def efficientnet_b0(self):
+        '''
+        Xception(初期値Imagenet)
+        '''
+
+        base_model = EfficientNetB0(include_top=False, weights='imagenet',
+                              input_shape=(self.h, self.w, self.ch))
+        x = GlobalAveragePooling2D()(base_model.output)
+        x = Dense(256, kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        if self.classes == 1:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='relu')(x)
+        else:
+            outputs = Dense(self.classes, kernel_initializer='he_normal',
+                            activation='softmax')(x)
+        model = Model(inputs=base_model.input, outputs=outputs)
+        
         return model
 
 
